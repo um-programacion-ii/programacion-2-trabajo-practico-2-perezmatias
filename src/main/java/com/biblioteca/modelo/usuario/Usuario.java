@@ -1,4 +1,4 @@
-package src.main.java.com.biblioteca.modelo.usuario;
+package com.biblioteca.modelo.usuario;
 
 import java.util.Objects;
 import java.util.UUID;
