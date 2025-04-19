@@ -4,6 +4,12 @@ import com.biblioteca.modelo.usuario.Usuario;
 import com.biblioteca.servicio.GestorRecursos;
 import com.biblioteca.servicio.GestorUsuarios;
 
+import com.biblioteca.modelo.recurso.Libro;
+import com.biblioteca.modelo.recurso.Revista;
+import com.biblioteca.modelo.recurso.Audiolibro;
+import com.biblioteca.modelo.recurso.RecursoDigital;
+import java.util.Optional;
+
 import java.util.InputMismatchException;
 import java.util.Scanner;
 
@@ -127,7 +133,116 @@ public class Consola {
 
 
     private void gestionarRecursos() {
-        mostrarMensaje(">>> Gestión de Recursos (Pendiente de Implementar) <<<");
+        System.out.println("\n--- Gestión de Recursos ---");
+        System.out.println("1. Agregar Libro");
+        System.out.println("2. Agregar Revista");
+        System.out.println("3. Agregar Audiolibro");
+        System.out.println("4. Listar Todos los Recursos");
+        System.out.println("5. Buscar Recurso por ID");
+        System.out.println("0. Volver al menú principal");
+        System.out.print("Seleccione una opción: ");
+
+        int opcion = leerOpcion();
+        switch (opcion) {
+            case 1:
+                agregarNuevoLibro();
+                break;
+            case 2:
+                agregarNuevaRevista();
+                break;
+            case 3:
+                agregarNuevoAudiolibro();
+                break;
+            case 4:
+                listarRecursos();
+                break;
+            case 5:
+                buscarRecurso();
+                break;
+            case 0:
+                break;
+            default:
+                mostrarMensaje("Opción no válida.");
+                break;
+        }
+    }
+
+    private void agregarNuevoLibro() {
+        mostrarMensaje("--- Agregar Nuevo Libro ---");
+        try {
+            String titulo = leerTexto("Ingrese título");
+            String autor = leerTexto("Ingrese autor");
+            String isbn = leerTexto("Ingrese ISBN");
+            Libro nuevoLibro = new Libro(titulo, autor, isbn);
+            if (gestorRecursos.agregarRecurso(nuevoLibro)) {
+                mostrarMensaje("Libro agregado con éxito.");
+            } else {
+                mostrarMensaje("No se pudo agregar el libro (posible ID duplicado o datos inválidos).");
+            }
+        } catch (NullPointerException | IllegalArgumentException e) {
+            mostrarMensaje("Error en los datos ingresados: " + e.getMessage());
+        }
+    }
+
+    private void agregarNuevaRevista() {
+        mostrarMensaje("--- Agregar Nueva Revista ---");
+        try {
+            String titulo = leerTexto("Ingrese título");
+            int edicion = Integer.parseInt(leerTexto("Ingrese número de edición"));
+            String periodicidad = leerTexto("Ingrese periodicidad (ej. Mensual)");
+            Revista nuevaRevista = new Revista(titulo, edicion, periodicidad);
+            if (gestorRecursos.agregarRecurso(nuevaRevista)) {
+                mostrarMensaje("Revista agregada con éxito.");
+            } else {
+                mostrarMensaje("No se pudo agregar la revista (posible ID duplicado o datos inválidos).");
+            }
+        } catch (NumberFormatException e) {
+            mostrarMensaje("Error: El número de edición debe ser un número entero.");
+        } catch (NullPointerException | IllegalArgumentException e) {
+            mostrarMensaje("Error en los datos ingresados: " + e.getMessage());
+        }
+    }
+
+    private void agregarNuevoAudiolibro() {
+        mostrarMensaje("--- Agregar Nuevo Audiolibro ---");
+        try {
+            String titulo = leerTexto("Ingrese título");
+            String narrador = leerTexto("Ingrese narrador");
+            int duracion = Integer.parseInt(leerTexto("Ingrese duración en minutos"));
+            Audiolibro nuevoAudiolibro = new Audiolibro(titulo, narrador, duracion);
+            if (gestorRecursos.agregarRecurso(nuevoAudiolibro)) {
+                mostrarMensaje("Audiolibro agregado con éxito.");
+            } else {
+                mostrarMensaje("No se pudo agregar el audiolibro (posible ID duplicado o datos inválidos).");
+            }
+        } catch (NumberFormatException e) {
+            mostrarMensaje("Error: La duración debe ser un número entero.");
+        } catch (NullPointerException | IllegalArgumentException e) {
+            mostrarMensaje("Error en los datos ingresados: " + e.getMessage());
+        }
+    }
+
+    private void listarRecursos() {
+        mostrarMensaje("--- Listado de Recursos ---");
+        var recursos = gestorRecursos.listarTodosLosRecursos();
+        if (recursos.isEmpty()) {
+            mostrarMensaje("No hay recursos registrados.");
+        } else {
+            recursos.forEach(recurso -> System.out.println(recurso));
+        }
+    }
+
+    private void buscarRecurso() {
+        mostrarMensaje("--- Buscar Recurso por ID ---");
+        String id = leerTexto("Ingrese el ID del recurso a buscar");
+        Optional<RecursoDigital> recursoOpt = gestorRecursos.buscarRecursoPorId(id);
+        recursoOpt.ifPresentOrElse(
+                recurso -> {
+                    mostrarMensaje("Recurso encontrado:");
+                    System.out.println(recurso);
+                },
+                () -> mostrarMensaje("No se encontró ningún recurso con el ID: " + id)
+        );
     }
 
     public void cerrarScanner() {
