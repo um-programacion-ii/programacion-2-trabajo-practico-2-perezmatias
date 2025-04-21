@@ -79,6 +79,7 @@ public class Libro extends RecursoBase implements Prestable, Renovable {
         return Optional.ofNullable(this.fechaDevolucionPrevista);
     }
 
+    @Override
     public Optional<Usuario> getUsuarioPrestamo() {
         return Optional.ofNullable(this.usuarioPrestamo);
     }

@@ -17,16 +17,21 @@ import com.biblioteca.modelo.recurso.Prestable;
 import com.biblioteca.modelo.recurso.Renovable;
 import java.time.LocalDate;
 
+import com.biblioteca.servicio.notificaciones.ServicioNotificaciones;
+import java.util.Objects;
+
 public class Consola {
 
     private final GestorUsuarios gestorUsuarios;
     private final GestorRecursos gestorRecursos;
     private final Scanner scanner;
+    private final ServicioNotificaciones servicioNotificaciones;
 
-    public Consola(GestorUsuarios gestorUsuarios, GestorRecursos gestorRecursos) {
+    public Consola(GestorUsuarios gestorUsuarios, GestorRecursos gestorRecursos, ServicioNotificaciones servicioNotificaciones) {
         this.gestorUsuarios = gestorUsuarios;
         this.gestorRecursos = gestorRecursos;
         this.scanner = new Scanner(System.in);
+        this.servicioNotificaciones = Objects.requireNonNull(servicioNotificaciones, "El servicio de notificaciones no puede ser nulo.");
     }
 
     public void iniciar() {
@@ -263,18 +268,17 @@ public class Consola {
         Usuario usuario = usuarioOpt.get();
 
         if (recurso instanceof Prestable prestableRecurso) {
-
             if (prestableRecurso.estaDisponibleParaPrestamo()) {
-
                 LocalDate fechaDevolucion = LocalDate.now().plusDays(14);
                 prestableRecurso.marcarComoPrestado(usuario, fechaDevolucion);
-
+                this.servicioNotificaciones.enviarNotificacion(
+                        "PRESTAMO_EXITOSO",
+                        usuario.getId(),
+                        "Prestamo registrado: '" + recurso.getTitulo() + "' hasta " + fechaDevolucion
+                );
             } else {
-                mostrarMensaje("Error: El recurso '" + recurso.getTitulo() + "' no está disponible para préstamo en este momento.");
             }
         } else {
-
-            mostrarMensaje("Error: El recurso '" + recurso.getTitulo() + "' no es del tipo que se pueda prestar.");
         }
     }
 
@@ -292,9 +296,17 @@ public class Consola {
         RecursoDigital recurso = recursoOpt.get();
 
         if (recurso instanceof Prestable prestableRecurso) {
+            Optional<Usuario> usuarioOptAnterior = prestableRecurso.getUsuarioPrestamo();
+            String idUsuarioAnterior = usuarioOptAnterior.map(Usuario::getId).orElse("DESCONOCIDO");
+
             prestableRecurso.marcarComoDevuelto();
+
+            this.servicioNotificaciones.enviarNotificacion(
+                    "DEVOLUCION_EXITOSA",
+                    idUsuarioAnterior,
+                    "Devolución registrada: '" + recurso.getTitulo() + "'"
+            );
         } else {
-            mostrarMensaje("Error: El recurso '" + recurso.getTitulo() + "' no es del tipo que se pueda prestar/devolver.");
         }
     }
 
@@ -315,14 +327,20 @@ public class Consola {
             Optional<LocalDate> fechaActualOpt = prestableRecurso.getFechaDevolucionPrevista();
             if(fechaActualOpt.isPresent()) {
                 LocalDate nuevaFecha = fechaActualOpt.get().plusDays(7);
-                if (!renovableRecurso.renovarPrestamo(nuevaFecha)) {
+
+                boolean exito = renovableRecurso.renovarPrestamo(nuevaFecha);
+
+                if (exito) {
+                    String idUsuarioActual = prestableRecurso.getUsuarioPrestamo().map(Usuario::getId).orElse("DESCONOCIDO");
+                    this.servicioNotificaciones.enviarNotificacion(
+                            "RENOVACION_EXITOSA",
+                            idUsuarioActual,
+                            "Préstamo renovado para '" + recurso.getTitulo() + "' hasta " + nuevaFecha
+                    );
                 }
             } else {
-                mostrarMensaje("Error: No se pudo obtener la fecha de devolución actual para calcular la renovación.");
             }
-
         } else {
-            mostrarMensaje("Error: El recurso '" + recurso.getTitulo() + "' no es del tipo cuyo préstamo se pueda renovar.");
         }
     }
 

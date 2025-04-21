@@ -15,5 +15,6 @@ public interface Prestable {
 
     Optional<LocalDate> getFechaDevolucionPrevista();
 
+    Optional<Usuario> getUsuarioPrestamo();
 
 }
