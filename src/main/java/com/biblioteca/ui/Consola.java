@@ -13,6 +13,10 @@ import java.util.Optional;
 import java.util.InputMismatchException;
 import java.util.Scanner;
 
+import com.biblioteca.modelo.recurso.Prestable;
+import com.biblioteca.modelo.recurso.Renovable;
+import java.time.LocalDate;
+
 public class Consola {
 
     private final GestorUsuarios gestorUsuarios;
@@ -139,31 +143,24 @@ public class Consola {
         System.out.println("3. Agregar Audiolibro");
         System.out.println("4. Listar Todos los Recursos");
         System.out.println("5. Buscar Recurso por ID");
+        System.out.println("6. Prestar Recurso");    // <-- NUEVO
+        System.out.println("7. Devolver Recurso");   // <-- NUEVO
+        System.out.println("8. Renovar Préstamo"); // <-- NUEVO
         System.out.println("0. Volver al menú principal");
         System.out.print("Seleccione una opción: ");
 
         int opcion = leerOpcion();
         switch (opcion) {
-            case 1:
-                agregarNuevoLibro();
-                break;
-            case 2:
-                agregarNuevaRevista();
-                break;
-            case 3:
-                agregarNuevoAudiolibro();
-                break;
-            case 4:
-                listarRecursos();
-                break;
-            case 5:
-                buscarRecurso();
-                break;
-            case 0:
-                break;
-            default:
-                mostrarMensaje("Opción no válida.");
-                break;
+            case 1: agregarNuevoLibro(); break;
+            case 2: agregarNuevaRevista(); break;
+            case 3: agregarNuevoAudiolibro(); break;
+            case 4: listarRecursos(); break;
+            case 5: buscarRecurso(); break;
+            case 6: prestarRecurso(); break;    // <-- NUEVO
+            case 7: devolverRecurso(); break;   // <-- NUEVO
+            case 8: renovarRecurso(); break;  // <-- NUEVO
+            case 0: break; // Volver
+            default: mostrarMensaje("Opción no válida."); break;
         }
     }
 
@@ -243,6 +240,90 @@ public class Consola {
                 },
                 () -> mostrarMensaje("No se encontró ningún recurso con el ID: " + id)
         );
+    }
+
+    private void prestarRecurso() {
+        mostrarMensaje("--- Prestar Recurso ---");
+        String recursoId = leerTexto("Ingrese ID del recurso a prestar");
+        String usuarioId = leerTexto("Ingrese ID del usuario que recibe el préstamo");
+
+        Optional<RecursoDigital> recursoOpt = gestorRecursos.buscarRecursoPorId(recursoId);
+        Optional<Usuario> usuarioOpt = gestorUsuarios.buscarUsuarioPorId(usuarioId);
+
+        if (recursoOpt.isEmpty()) {
+            mostrarMensaje("Error: No se encontró el recurso con ID: " + recursoId);
+            return;
+        }
+        if (usuarioOpt.isEmpty()) {
+            mostrarMensaje("Error: No se encontró el usuario con ID: " + usuarioId);
+            return;
+        }
+
+        RecursoDigital recurso = recursoOpt.get();
+        Usuario usuario = usuarioOpt.get();
+
+        if (recurso instanceof Prestable prestableRecurso) {
+
+            if (prestableRecurso.estaDisponibleParaPrestamo()) {
+
+                LocalDate fechaDevolucion = LocalDate.now().plusDays(14);
+                prestableRecurso.marcarComoPrestado(usuario, fechaDevolucion);
+
+            } else {
+                mostrarMensaje("Error: El recurso '" + recurso.getTitulo() + "' no está disponible para préstamo en este momento.");
+            }
+        } else {
+
+            mostrarMensaje("Error: El recurso '" + recurso.getTitulo() + "' no es del tipo que se pueda prestar.");
+        }
+    }
+
+    private void devolverRecurso() {
+        mostrarMensaje("--- Devolver Recurso ---");
+        String recursoId = leerTexto("Ingrese ID del recurso a devolver");
+
+        Optional<RecursoDigital> recursoOpt = gestorRecursos.buscarRecursoPorId(recursoId);
+
+        if (recursoOpt.isEmpty()) {
+            mostrarMensaje("Error: No se encontró el recurso con ID: " + recursoId);
+            return;
+        }
+
+        RecursoDigital recurso = recursoOpt.get();
+
+        if (recurso instanceof Prestable prestableRecurso) {
+            prestableRecurso.marcarComoDevuelto();
+        } else {
+            mostrarMensaje("Error: El recurso '" + recurso.getTitulo() + "' no es del tipo que se pueda prestar/devolver.");
+        }
+    }
+
+    private void renovarRecurso() {
+        mostrarMensaje("--- Renovar Préstamo ---");
+        String recursoId = leerTexto("Ingrese ID del recurso a renovar");
+
+        Optional<RecursoDigital> recursoOpt = gestorRecursos.buscarRecursoPorId(recursoId);
+
+        if (recursoOpt.isEmpty()) {
+            mostrarMensaje("Error: No se encontró el recurso con ID: " + recursoId);
+            return;
+        }
+
+        RecursoDigital recurso = recursoOpt.get();
+
+        if (recurso instanceof Renovable renovableRecurso && recurso instanceof Prestable prestableRecurso) {
+            Optional<LocalDate> fechaActualOpt = prestableRecurso.getFechaDevolucionPrevista();
+            if(fechaActualOpt.isPresent()) {
+                LocalDate nuevaFecha = fechaActualOpt.get().plusDays(7);
+                if (!renovableRecurso.renovarPrestamo(nuevaFecha)) {
+                }
+            } else {
+                mostrarMensaje("Error: No se pudo obtener la fecha de devolución actual para calcular la renovación.");
+            }
+
+        } else {
+            mostrarMensaje("Error: El recurso '" + recurso.getTitulo() + "' no es del tipo cuyo préstamo se pueda renovar.");
+        }
     }
 
     public void cerrarScanner() {
