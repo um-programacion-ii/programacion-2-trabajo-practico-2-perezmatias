@@ -5,13 +5,15 @@ import java.time.LocalDate;
 import java.util.Objects;
 import java.util.Optional;
 
-public class Audiolibro extends RecursoBase implements Prestable {
+public class Audiolibro extends RecursoBase implements Prestable, Renovable {
 
     private String narrador;
     private int duracionMinutos;
 
     private Usuario usuarioPrestamo = null;
     private LocalDate fechaDevolucionPrevista = null;
+
+    private int numeroRenovaciones = 0;
 
     public Audiolibro(String titulo, String narrador, int duracionMinutos) {
         super(titulo);
@@ -43,6 +45,7 @@ public class Audiolibro extends RecursoBase implements Prestable {
         }
         this.usuarioPrestamo = Objects.requireNonNull(usuario, "El usuario no puede ser nulo.");
         this.fechaDevolucionPrevista = Objects.requireNonNull(fechaDevolucion, "La fecha de devolución no puede ser nula.");
+        this.numeroRenovaciones = 0;
         this.actualizarEstado(EstadoRecurso.PRESTADO);
         System.out.println("Audiolibro '" + getTitulo() + "' prestado a " + usuario.getNombre() + " hasta " + fechaDevolucion);
     }
@@ -63,8 +66,37 @@ public class Audiolibro extends RecursoBase implements Prestable {
         return Optional.ofNullable(this.fechaDevolucionPrevista);
     }
 
+
     public Optional<Usuario> getUsuarioPrestamo() {
         return Optional.ofNullable(this.usuarioPrestamo);
+    }
+
+    @Override
+    public boolean puedeRenovarse(LocalDate fechaActual) {
+        return this.estado == EstadoRecurso.PRESTADO;
+    }
+
+    @Override
+    public boolean renovarPrestamo(LocalDate nuevaFechaDevolucion) {
+        if (!puedeRenovarse(LocalDate.now())) {
+            System.err.println("Error: El préstamo del audiolibro '" + getTitulo() + "' no puede ser renovado ahora.");
+            return false;
+        }
+        if (nuevaFechaDevolucion == null || !nuevaFechaDevolucion.isAfter(this.fechaDevolucionPrevista)) {
+            System.err.println("Error: La nueva fecha de devolución debe ser posterior a la actual ("+ this.fechaDevolucionPrevista +").");
+            return false;
+        }
+
+        this.fechaDevolucionPrevista = nuevaFechaDevolucion;
+        this.numeroRenovaciones++;
+        System.out.println("Préstamo del audiolibro '" + getTitulo() + "' renovado hasta " + nuevaFechaDevolucion
+                + ". Renovaciones: " + this.numeroRenovaciones);
+        return true;
+    }
+
+
+    public int getNumeroRenovaciones() {
+        return numeroRenovaciones;
     }
 
     @Override
@@ -72,11 +104,12 @@ public class Audiolibro extends RecursoBase implements Prestable {
         String infoBase = super.toString();
         String infoPrestamo = "";
 
+
         if (estado == EstadoRecurso.PRESTADO && usuarioPrestamo != null) {
             infoPrestamo = ", Prestado a=" + usuarioPrestamo.getNombre() +
-                    ", Devolución=" + fechaDevolucionPrevista;
+                    ", Devolución=" + fechaDevolucionPrevista +
+                    ", Renovaciones=" + numeroRenovaciones;
         }
-
         return "Audiolibro{ " + infoBase +
                 ", Narrador='" + narrador + '\'' +
                 ", Duración=" + duracionMinutos + " min" +
