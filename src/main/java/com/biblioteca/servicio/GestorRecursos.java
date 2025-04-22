@@ -1,7 +1,9 @@
 package com.biblioteca.servicio;
 
 import com.biblioteca.modelo.recurso.RecursoDigital;
-
+import com.biblioteca.modelo.recurso.CategoriaRecurso;
+import java.util.Objects;
+import java.util.stream.Collectors;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -50,6 +52,15 @@ public class GestorRecursos {
         recursos.put(recursoActualizado.getIdentificador(), recursoActualizado); // Sobrescribe
         System.out.println("Recurso actualizado: " + recursoActualizado.getTitulo());
         return true;
+    }
+
+    public List<RecursoDigital> buscarPorCategoria(CategoriaRecurso categoria) {
+        Objects.requireNonNull(categoria, "La categoría no puede ser nula para la búsqueda.");
+
+        return this.recursos.values()
+                .stream()
+                .filter(recurso -> recurso.getCategoria().equals(categoria))
+                .collect(Collectors.toList());
     }
 
 }
