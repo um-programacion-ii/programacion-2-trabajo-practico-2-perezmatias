@@ -25,6 +25,8 @@ import java.util.List;
 import com.biblioteca.servicio.comparadores.ComparadorRecursoPorId;
 import com.biblioteca.servicio.comparadores.ComparadorRecursoPorTitulo;
 import java.util.Comparator;
+import com.biblioteca.excepciones.UsuarioDuplicadoException;
+import com.biblioteca.excepciones.RecursoDuplicadoException;
 
 public class Consola {
 
@@ -129,13 +131,21 @@ public class Consola {
 
     private void agregarNuevoUsuario() {
         mostrarMensaje("--- Agregar Nuevo Usuario ---");
-        String nombre = leerTexto("Ingrese nombre del usuario");
-        String email = leerTexto("Ingrese email del usuario");
-        Usuario nuevoUsuario = new Usuario(nombre, email);
-        if (gestorUsuarios.agregarUsuario(nuevoUsuario)) {
-            mostrarMensaje("Usuario agregado con éxito.");
-        } else {
-            mostrarMensaje("No se pudo agregar el usuario (posible ID duplicado o datos inválidos).");
+        try {
+            String nombre = leerTexto("Ingrese nombre del usuario");
+            String email = leerTexto("Ingrese email del usuario");
+            Usuario nuevoUsuario = new Usuario(nombre, email);
+
+            gestorUsuarios.agregarUsuario(nuevoUsuario);
+
+            mostrarMensaje("Usuario agregado con éxito (ID: " + nuevoUsuario.getId() + ").");
+
+        } catch (UsuarioDuplicadoException e) {
+            mostrarMensaje("Error al agregar: " + e.getMessage());
+        } catch (NullPointerException e) {
+            mostrarMensaje("Error: Datos inválidos (nulos) para el usuario.");
+        } catch (Exception e) {
+            mostrarMensaje("Ocurrió un error inesperado al agregar el usuario: " + e.getMessage());
         }
     }
 
@@ -195,13 +205,17 @@ public class Consola {
             String isbn = leerTexto("Ingrese ISBN");
             CategoriaRecurso categoria = seleccionarCategoria();
             Libro nuevoLibro = new Libro(titulo, autor, isbn, categoria);
-            if (gestorRecursos.agregarRecurso(nuevoLibro)) {
-                mostrarMensaje("Libro agregado con éxito.");
-            } else {
-                mostrarMensaje("No se pudo agregar el libro (posible ID duplicado o datos inválidos).");
-            }
+
+            gestorRecursos.agregarRecurso(nuevoLibro);
+
+            mostrarMensaje("Libro agregado con éxito (ID: " + nuevoLibro.getIdentificador() + ").");
+
+        } catch (RecursoDuplicadoException e) {
+            mostrarMensaje("Error al agregar: " + e.getMessage());
         } catch (NullPointerException | IllegalArgumentException e) {
             mostrarMensaje("Error en los datos ingresados: " + e.getMessage());
+        } catch (Exception e) {
+            mostrarMensaje("Ocurrió un error inesperado al agregar el libro: " + e.getMessage());
         }
     }
 
@@ -213,15 +227,19 @@ public class Consola {
             String periodicidad = leerTexto("Ingrese periodicidad (ej. Mensual)");
             CategoriaRecurso categoria = seleccionarCategoria();
             Revista nuevaRevista = new Revista(titulo, edicion, periodicidad, categoria);
-            if (gestorRecursos.agregarRecurso(nuevaRevista)) {
-                mostrarMensaje("Revista agregada con éxito.");
-            } else {
-                mostrarMensaje("No se pudo agregar la revista (posible ID duplicado o datos inválidos).");
-            }
+
+            gestorRecursos.agregarRecurso(nuevaRevista);
+
+            mostrarMensaje("Revista agregada con éxito (ID: " + nuevaRevista.getIdentificador() + ").");
+
+        } catch (RecursoDuplicadoException e) {
+            mostrarMensaje("Error al agregar: " + e.getMessage());
         } catch (NumberFormatException e) {
-            mostrarMensaje("Error: El número de edición debe ser un número entero.");
+            mostrarMensaje("Error: El número de edición debe ser un número entero válido.");
         } catch (NullPointerException | IllegalArgumentException e) {
             mostrarMensaje("Error en los datos ingresados: " + e.getMessage());
+        } catch (Exception e) {
+            mostrarMensaje("Ocurrió un error inesperado al agregar la revista: " + e.getMessage());
         }
     }
 
@@ -233,15 +251,19 @@ public class Consola {
             int duracion = Integer.parseInt(leerTexto("Ingrese duración en minutos"));
             CategoriaRecurso categoria = seleccionarCategoria();
             Audiolibro nuevoAudiolibro = new Audiolibro(titulo, narrador, duracion, categoria);
-            if (gestorRecursos.agregarRecurso(nuevoAudiolibro)) {
-                mostrarMensaje("Audiolibro agregado con éxito.");
-            } else {
-                mostrarMensaje("No se pudo agregar el audiolibro (posible ID duplicado o datos inválidos).");
-            }
+
+            gestorRecursos.agregarRecurso(nuevoAudiolibro);
+
+            mostrarMensaje("Audiolibro agregado con éxito (ID: " + nuevoAudiolibro.getIdentificador() + ").");
+
+        } catch (RecursoDuplicadoException e) {
+            mostrarMensaje("Error al agregar: " + e.getMessage());
         } catch (NumberFormatException e) {
-            mostrarMensaje("Error: La duración debe ser un número entero.");
+            mostrarMensaje("Error: La duración debe ser un número entero válido.");
         } catch (NullPointerException | IllegalArgumentException e) {
             mostrarMensaje("Error en los datos ingresados: " + e.getMessage());
+        } catch (Exception e) {
+            mostrarMensaje("Ocurrió un error inesperado al agregar el audiolibro: " + e.getMessage());
         }
     }
 
