@@ -63,4 +63,20 @@ public class GestorRecursos {
                 .collect(Collectors.toList());
     }
 
+    public List<RecursoDigital> buscarPorTitulo(String textoBusqueda) {
+        if (textoBusqueda == null || textoBusqueda.trim().isEmpty()) {
+            System.err.println("Advertencia: Texto de búsqueda por título está vacío.");
+            return new ArrayList<>();
+        }
+
+        final String textoBusquedaLower = textoBusqueda.toLowerCase();
+
+        return this.recursos.values()
+                .stream()
+                .filter(recurso -> recurso.getTitulo() != null &&
+                        recurso.getTitulo().toLowerCase()
+                                .contains(textoBusquedaLower))
+                .collect(Collectors.toList());
+    }
+
 }
