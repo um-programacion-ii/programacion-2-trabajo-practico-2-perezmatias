@@ -27,6 +27,7 @@ import com.biblioteca.servicio.comparadores.ComparadorRecursoPorTitulo;
 import java.util.Comparator;
 import com.biblioteca.excepciones.UsuarioDuplicadoException;
 import com.biblioteca.excepciones.RecursoDuplicadoException;
+import com.biblioteca.excepciones.OperacionNoPermitidaException;
 
 public class Consola {
 
@@ -395,23 +396,34 @@ public class Consola {
         RecursoDigital recurso = recursoOpt.get();
 
         if (recurso instanceof Renovable renovableRecurso && recurso instanceof Prestable prestableRecurso) {
+
             Optional<LocalDate> fechaActualOpt = prestableRecurso.getFechaDevolucionPrevista();
-            if(fechaActualOpt.isPresent()) {
-                LocalDate nuevaFecha = fechaActualOpt.get().plusDays(7);
-
-                boolean exito = renovableRecurso.renovarPrestamo(nuevaFecha);
-
-                if (exito) {
-                    String idUsuarioActual = prestableRecurso.getUsuarioPrestamo().map(Usuario::getId).orElse("DESCONOCIDO");
-                    this.servicioNotificaciones.enviarNotificacion(
-                            "RENOVACION_EXITOSA",
-                            idUsuarioActual,
-                            "Préstamo renovado para '" + recurso.getTitulo() + "' hasta " + nuevaFecha
-                    );
-                }
-            } else {
+            if (fechaActualOpt.isEmpty()) {
+                mostrarMensaje("Error: El recurso no parece estar prestado actualmente.");
+                return;
             }
+            LocalDate nuevaFecha = fechaActualOpt.get().plusDays(7);
+
+            try {
+                renovableRecurso.renovarPrestamo(nuevaFecha);
+
+                String idUsuarioActual = prestableRecurso.getUsuarioPrestamo().map(Usuario::getId).orElse("DESCONOCIDO");
+                this.servicioNotificaciones.enviarNotificacion(
+                        "RENOVACION_EXITOSA",
+                        idUsuarioActual,
+                        "Préstamo renovado para '" + recurso.getTitulo() + "' (ID: " + recurso.getIdentificador() + "). Nueva fecha devolución: " + nuevaFecha
+                );
+
+                mostrarMensaje("Renovación realizada con éxito.");
+
+            } catch (OperacionNoPermitidaException e) {
+                mostrarMensaje("Error al renovar: " + e.getMessage());
+            } catch (Exception e) {
+                mostrarMensaje("Ocurrió un error inesperado durante la renovación: " + e.getMessage());
+            }
+
         } else {
+            mostrarMensaje("Error: El recurso '" + recurso.getTitulo() + "' no es del tipo cuyo préstamo se pueda renovar.");
         }
     }
 

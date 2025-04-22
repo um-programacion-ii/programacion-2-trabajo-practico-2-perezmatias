@@ -1,5 +1,5 @@
 package com.biblioteca.modelo.recurso;
-
+import com.biblioteca.excepciones.OperacionNoPermitidaException;
 import com.biblioteca.modelo.usuario.Usuario;
 import com.biblioteca.modelo.recurso.CategoriaRecurso;
 import java.time.LocalDate;
@@ -40,15 +40,17 @@ public class Audiolibro extends RecursoBase implements Prestable, Renovable {
 
     @Override
     public void marcarComoPrestado(Usuario usuario, LocalDate fechaDevolucion) {
+        Objects.requireNonNull(usuario, "El usuario no puede ser nulo.");
+        Objects.requireNonNull(fechaDevolucion, "La fecha de devolución no puede ser nula.");
+
         if (!estaDisponibleParaPrestamo()) {
-            System.err.println("Error: El audiolibro '" + getTitulo() + "' no está disponible para préstamo.");
-            return;
+            throw new OperacionNoPermitidaException("El audiolibro '" + getTitulo() + "' no está disponible para préstamo.");
         }
-        this.usuarioPrestamo = Objects.requireNonNull(usuario, "El usuario no puede ser nulo.");
-        this.fechaDevolucionPrevista = Objects.requireNonNull(fechaDevolucion, "La fecha de devolución no puede ser nula.");
+
+        this.usuarioPrestamo = usuario;
+        this.fechaDevolucionPrevista = fechaDevolucion;
         this.numeroRenovaciones = 0;
         this.actualizarEstado(EstadoRecurso.PRESTADO);
-        System.out.println("Audiolibro '" + getTitulo() + "' prestado a " + usuario.getNombre() + " hasta " + fechaDevolucion);
     }
 
     @Override
@@ -78,21 +80,19 @@ public class Audiolibro extends RecursoBase implements Prestable, Renovable {
     }
 
     @Override
-    public boolean renovarPrestamo(LocalDate nuevaFechaDevolucion) {
+    public void renovarPrestamo(LocalDate nuevaFechaDevolucion) {
+        Objects.requireNonNull(nuevaFechaDevolucion, "La nueva fecha de devolución no puede ser nula.");
+
         if (!puedeRenovarse(LocalDate.now())) {
-            System.err.println("Error: El préstamo del audiolibro '" + getTitulo() + "' no puede ser renovado ahora.");
-            return false;
+            throw new OperacionNoPermitidaException("El préstamo del audiolibro '" + getTitulo() + "' no puede ser renovado ahora.");
         }
-        if (nuevaFechaDevolucion == null || !nuevaFechaDevolucion.isAfter(this.fechaDevolucionPrevista)) {
-            System.err.println("Error: La nueva fecha de devolución debe ser posterior a la actual ("+ this.fechaDevolucionPrevista +").");
-            return false;
+
+        if (!nuevaFechaDevolucion.isAfter(this.fechaDevolucionPrevista)) {
+            throw new OperacionNoPermitidaException("La nueva fecha de devolución ("+ nuevaFechaDevolucion + ") debe ser posterior a la actual ("+ this.fechaDevolucionPrevista +").");
         }
 
         this.fechaDevolucionPrevista = nuevaFechaDevolucion;
         this.numeroRenovaciones++;
-        System.out.println("Préstamo del audiolibro '" + getTitulo() + "' renovado hasta " + nuevaFechaDevolucion
-                + ". Renovaciones: " + this.numeroRenovaciones);
-        return true;
     }
 
 

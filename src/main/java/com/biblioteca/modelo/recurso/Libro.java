@@ -1,6 +1,7 @@
 package com.biblioteca.modelo.recurso;
 
 import com.biblioteca.modelo.recurso.CategoriaRecurso;
+import com.biblioteca.excepciones.OperacionNoPermitidaException;
 import com.biblioteca.modelo.usuario.Usuario;
 import java.time.LocalDate;
 import java.util.Optional;
@@ -52,15 +53,17 @@ public class Libro extends RecursoBase implements Prestable, Renovable {
 
     @Override
     public void marcarComoPrestado(Usuario usuario, LocalDate fechaDevolucion) {
+        Objects.requireNonNull(usuario, "El usuario no puede ser nulo.");
+        Objects.requireNonNull(fechaDevolucion, "La fecha de devolución no puede ser nula.");
+
         if (!estaDisponibleParaPrestamo()) {
-            System.err.println("Error: El libro '" + getTitulo() + "' no está disponible para préstamo.");
-            return;
+            throw new OperacionNoPermitidaException("El libro '" + getTitulo() + "' no está disponible para préstamo.");
         }
-        this.usuarioPrestamo = Objects.requireNonNull(usuario, "El usuario no puede ser nulo.");
-        this.fechaDevolucionPrevista = Objects.requireNonNull(fechaDevolucion, "La fecha de devolución no puede ser nula.");
+
+        this.usuarioPrestamo = usuario;
+        this.fechaDevolucionPrevista = fechaDevolucion;
         this.numeroRenovaciones = 0;
         this.actualizarEstado(EstadoRecurso.PRESTADO);
-        System.out.println("Libro '" + getTitulo() + "' prestado a " + usuario.getNombre() + " hasta " + fechaDevolucion);
     }
 
     @Override
@@ -91,22 +94,18 @@ public class Libro extends RecursoBase implements Prestable, Renovable {
     }
 
     @Override
-    public boolean renovarPrestamo(LocalDate nuevaFechaDevolucion) {
+    public void renovarPrestamo(LocalDate nuevaFechaDevolucion) {
+        Objects.requireNonNull(nuevaFechaDevolucion, "La nueva fecha de devolución no puede ser nula.");
 
         if (!puedeRenovarse(LocalDate.now())) {
-            System.err.println("Error: El préstamo del libro '" + getTitulo() + "' no puede ser renovado ahora.");
-            return false;
+            throw new OperacionNoPermitidaException("El préstamo del libro '" + getTitulo() + "' no puede ser renovado ahora.");
         }
-        if (nuevaFechaDevolucion == null || nuevaFechaDevolucion.isBefore(this.fechaDevolucionPrevista)) {
-            System.err.println("Error: La nueva fecha de devolución debe ser posterior a la actual.");
-            return false;
+        if (!nuevaFechaDevolucion.isAfter(this.fechaDevolucionPrevista)) {
+            throw new OperacionNoPermitidaException("La nueva fecha de devolución ("+ nuevaFechaDevolucion + ") debe ser posterior a la actual ("+ this.fechaDevolucionPrevista +").");
         }
 
         this.fechaDevolucionPrevista = nuevaFechaDevolucion;
         this.numeroRenovaciones++;
-        System.out.println("Préstamo del libro '" + getTitulo() + "' renovado hasta " + nuevaFechaDevolucion
-                + ". Renovaciones: " + this.numeroRenovaciones);
-        return true;
     }
 
     public int getNumeroRenovaciones() {
