@@ -151,11 +151,12 @@ public class Consola {
         System.out.println("4. Listar Todos los Recursos");
         System.out.println("5. Buscar Recurso por ID");
         System.out.println("6. Buscar Recursos por Título");
-        System.out.println("7. Listar Recursos por Categoría");
-        System.out.println("8. Mostrar Categorías Disponibles");
-        System.out.println("9. Prestar Recurso");
-        System.out.println("10. Devolver Recurso");
-        System.out.println("11. Renovar Préstamo");
+        System.out.println("7. Filtrar Recursos por Tipo");
+        System.out.println("8. Listar Recursos por Categoría");
+        System.out.println("9. Mostrar Categorías Disponibles");
+        System.out.println("10. Prestar Recurso");
+        System.out.println("11. Devolver Recurso");
+        System.out.println("12. Renovar Préstamo");
         System.out.println("0. Volver al menú principal");
         System.out.print("Seleccione una opción: ");
 
@@ -167,11 +168,12 @@ public class Consola {
             case 4: listarRecursos(); break;
             case 5: buscarRecurso(); break;
             case 6: buscarRecursosPorTitulo(); break;
-            case 7: listarRecursosPorCategoria(); break;
-            case 8: mostrarCategoriasDisponibles(); break;
-            case 9: prestarRecurso(); break;
-            case 10: devolverRecurso(); break;
-            case 11: renovarRecurso(); break;
+            case 7: listarRecursosPorTipo(); break;
+            case 8: listarRecursosPorCategoria(); break;
+            case 9: mostrarCategoriasDisponibles(); break;
+            case 10: prestarRecurso(); break;
+            case 11: devolverRecurso(); break;
+            case 12: renovarRecurso(); break;
             case 0: break;
             default: mostrarMensaje("Opción no válida."); break;
         }
@@ -417,6 +419,46 @@ public class Consola {
         } else {
             mostrarMensaje("Recursos encontrados con '" + textoBusqueda + "' en el título:");
             recursosEncontrados.forEach(recurso -> System.out.println(recurso));
+        }
+    }
+
+    private void listarRecursosPorTipo() {
+        System.out.println("\n--- Filtrar Recursos por Tipo ---");
+        System.out.println("Seleccione el tipo de recurso a listar:");
+        System.out.println("1. Libro");
+        System.out.println("2. Revista");
+        System.out.println("3. Audiolibro");
+        System.out.println("0. Cancelar");
+        System.out.print("Seleccione una opción: ");
+
+        int opcionTipo = leerOpcion();
+        Class<? extends RecursoDigital> tipoClase = null;
+
+        switch (opcionTipo) {
+            case 1:
+                tipoClase = Libro.class;
+                break;
+            case 2:
+                tipoClase = Revista.class;
+                break;
+            case 3:
+                tipoClase = Audiolibro.class;
+                break;
+            case 0:
+                mostrarMensaje("Operación cancelada.");
+                return;
+            default:
+                mostrarMensaje("Opción de tipo no válida.");
+                return;
+        }
+
+        List<RecursoDigital> recursosFiltrados = gestorRecursos.filtrarPorTipo(tipoClase);
+
+        if (recursosFiltrados.isEmpty()) {
+            mostrarMensaje("No se encontraron recursos del tipo: " + tipoClase.getSimpleName());
+        } else {
+            mostrarMensaje("Recursos encontrados del tipo '" + tipoClase.getSimpleName() + "':");
+            recursosFiltrados.forEach(recurso -> System.out.println(recurso));
         }
     }
 
