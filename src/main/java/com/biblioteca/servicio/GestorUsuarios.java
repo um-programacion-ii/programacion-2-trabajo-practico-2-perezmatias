@@ -7,6 +7,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 
 public class GestorUsuarios {
@@ -54,5 +55,23 @@ public class GestorUsuarios {
         usuarios.put(usuarioActualizado.getId(), usuarioActualizado);
         System.out.println("Usuario actualizado: " + usuarioActualizado.getNombre());
         return true;
+    }
+
+    public List<Usuario> buscarPorNombreOEmail(String textoBusqueda) {
+        if (textoBusqueda == null || textoBusqueda.trim().isEmpty()) {
+            System.err.println("Advertencia: Texto de búsqueda por nombre/email está vacío.");
+            return new ArrayList<>();
+        }
+
+        final String textoBusquedaLower = textoBusqueda.toLowerCase();
+
+        return this.usuarios.values()
+                .stream()
+                .filter(usuario ->
+                        (usuario.getNombre() != null && usuario.getNombre().toLowerCase().contains(textoBusquedaLower))
+                                ||
+                                (usuario.getEmail() != null && usuario.getEmail().toLowerCase().contains(textoBusquedaLower))
+                )
+                .collect(Collectors.toList());
     }
 }
