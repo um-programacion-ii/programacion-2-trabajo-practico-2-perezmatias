@@ -150,11 +150,12 @@ public class Consola {
         System.out.println("3. Agregar Audiolibro");
         System.out.println("4. Listar Todos los Recursos");
         System.out.println("5. Buscar Recurso por ID");
-        System.out.println("6. Listar Recursos por Categoría");
-        System.out.println("7. Mostrar Categorías Disponibles");
-        System.out.println("8. Prestar Recurso");
-        System.out.println("9. Devolver Recurso");
-        System.out.println("10. Renovar Préstamo");
+        System.out.println("6. Buscar Recursos por Título");
+        System.out.println("7. Listar Recursos por Categoría");
+        System.out.println("8. Mostrar Categorías Disponibles");
+        System.out.println("9. Prestar Recurso");
+        System.out.println("10. Devolver Recurso");
+        System.out.println("11. Renovar Préstamo");
         System.out.println("0. Volver al menú principal");
         System.out.print("Seleccione una opción: ");
 
@@ -165,11 +166,12 @@ public class Consola {
             case 3: agregarNuevoAudiolibro(); break;
             case 4: listarRecursos(); break;
             case 5: buscarRecurso(); break;
-            case 6: listarRecursosPorCategoria(); break;
-            case 7: mostrarCategoriasDisponibles(); break;
-            case 8: prestarRecurso(); break;
-            case 9: devolverRecurso(); break;
-            case 10: renovarRecurso(); break;
+            case 6: buscarRecursosPorTitulo(); break;
+            case 7: listarRecursosPorCategoria(); break;
+            case 8: mostrarCategoriasDisponibles(); break;
+            case 9: prestarRecurso(); break;
+            case 10: devolverRecurso(); break;
+            case 11: renovarRecurso(); break;
             case 0: break;
             default: mostrarMensaje("Opción no válida."); break;
         }
@@ -396,6 +398,25 @@ public class Consola {
         } else {
             mostrarMensaje("Recursos encontrados en la categoría '" + categoriaSeleccionada.name() + "':");
             recursosFiltrados.forEach(recurso -> System.out.println(recurso));
+        }
+    }
+
+    private void buscarRecursosPorTitulo() {
+        mostrarMensaje("--- Buscar Recursos por Título ---");
+        String textoBusqueda = leerTexto("Ingrese el texto a buscar en el título");
+
+        if (textoBusqueda.trim().isEmpty()) {
+            mostrarMensaje("La búsqueda no puede estar vacía.");
+            return;
+        }
+
+        List<RecursoDigital> recursosEncontrados = gestorRecursos.buscarPorTitulo(textoBusqueda);
+
+        if (recursosEncontrados.isEmpty()) {
+            mostrarMensaje("No se encontraron recursos cuyo título contenga: '" + textoBusqueda + "'");
+        } else {
+            mostrarMensaje("Recursos encontrados con '" + textoBusqueda + "' en el título:");
+            recursosEncontrados.forEach(recurso -> System.out.println(recurso));
         }
     }
 
