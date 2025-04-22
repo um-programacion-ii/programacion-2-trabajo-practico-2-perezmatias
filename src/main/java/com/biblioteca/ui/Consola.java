@@ -22,6 +22,10 @@ import com.biblioteca.servicio.notificaciones.ServicioNotificaciones;
 import java.util.Objects;
 import java.util.List;
 
+import com.biblioteca.servicio.comparadores.ComparadorRecursoPorId;
+import com.biblioteca.servicio.comparadores.ComparadorRecursoPorTitulo;
+import java.util.Comparator;
+
 public class Consola {
 
     private final GestorUsuarios gestorUsuarios;
@@ -243,7 +247,35 @@ public class Consola {
 
     private void listarRecursos() {
         mostrarMensaje("--- Listado de Recursos ---");
-        var recursos = gestorRecursos.listarTodosLosRecursos();
+        System.out.println("Seleccione el orden para mostrar los recursos:");
+        System.out.println("1. Ordenar por Título (A-Z)");
+        System.out.println("2. Ordenar por ID");
+        System.out.println("0. Sin ordenar (por defecto)");
+        System.out.print("Seleccione una opción de ordenamiento: ");
+
+        int opcionOrden = leerOpcion();
+        Comparator<RecursoDigital> comparador = null;
+
+        switch (opcionOrden) {
+            case 1:
+                comparador = new ComparadorRecursoPorTitulo();
+                mostrarMensaje("Ordenando por Título...");
+                break;
+            case 2:
+                comparador = new ComparadorRecursoPorId();
+                mostrarMensaje("Ordenando por ID...");
+                break;
+            case 0:
+                mostrarMensaje("Mostrando sin orden específico...");
+                break;
+            case -1:
+                return;
+            default:
+                mostrarMensaje("Opción de ordenamiento no válida. Mostrando sin orden específico...");
+                break;
+        }
+        List<RecursoDigital> recursos = gestorRecursos.listarTodosLosRecursos(comparador);
+
         if (recursos.isEmpty()) {
             mostrarMensaje("No hay recursos registrados.");
         } else {
