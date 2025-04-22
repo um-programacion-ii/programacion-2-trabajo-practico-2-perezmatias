@@ -100,6 +100,7 @@ public class Consola {
         System.out.println("\n--- Gestión de Usuarios ---");
         System.out.println("1. Agregar Usuario");
         System.out.println("2. Listar Usuarios");
+        System.out.println("3. Buscar por Nombre/Email");
         System.out.println("0. Volver al menú principal");
         System.out.print("Seleccione una opción: ");
 
@@ -110,6 +111,9 @@ public class Consola {
                 break;
             case 2:
                 listarUsuarios();
+                break;
+            case 3:
+                buscarUsuariosPorNombreOEmail();
                 break;
             case 0:
                 break;
@@ -459,6 +463,25 @@ public class Consola {
         } else {
             mostrarMensaje("Recursos encontrados del tipo '" + tipoClase.getSimpleName() + "':");
             recursosFiltrados.forEach(recurso -> System.out.println(recurso));
+        }
+    }
+
+    private void buscarUsuariosPorNombreOEmail() {
+        mostrarMensaje("--- Buscar Usuarios por Nombre o Email ---");
+        String textoBusqueda = leerTexto("Ingrese el texto a buscar en nombre o email");
+
+        if (textoBusqueda.trim().isEmpty()) {
+            mostrarMensaje("La búsqueda no puede estar vacía.");
+            return;
+        }
+
+        List<Usuario> usuariosEncontrados = gestorUsuarios.buscarPorNombreOEmail(textoBusqueda);
+
+        if (usuariosEncontrados.isEmpty()) {
+            mostrarMensaje("No se encontraron usuarios que coincidan con: '" + textoBusqueda + "'");
+        } else {
+            mostrarMensaje("Usuarios encontrados con '" + textoBusqueda + "' en nombre o email:");
+            usuariosEncontrados.forEach(usuario -> System.out.println(usuario));
         }
     }
 
