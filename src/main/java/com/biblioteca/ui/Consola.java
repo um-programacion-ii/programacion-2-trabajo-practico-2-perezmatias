@@ -8,6 +8,7 @@ import com.biblioteca.modelo.recurso.Libro;
 import com.biblioteca.modelo.recurso.Revista;
 import com.biblioteca.modelo.recurso.Audiolibro;
 import com.biblioteca.modelo.recurso.RecursoDigital;
+import com.biblioteca.modelo.recurso.CategoriaRecurso;
 import java.util.Optional;
 
 import java.util.InputMismatchException;
@@ -175,7 +176,8 @@ public class Consola {
             String titulo = leerTexto("Ingrese título");
             String autor = leerTexto("Ingrese autor");
             String isbn = leerTexto("Ingrese ISBN");
-            Libro nuevoLibro = new Libro(titulo, autor, isbn);
+            CategoriaRecurso categoria = seleccionarCategoria();
+            Libro nuevoLibro = new Libro(titulo, autor, isbn, categoria);
             if (gestorRecursos.agregarRecurso(nuevoLibro)) {
                 mostrarMensaje("Libro agregado con éxito.");
             } else {
@@ -192,7 +194,8 @@ public class Consola {
             String titulo = leerTexto("Ingrese título");
             int edicion = Integer.parseInt(leerTexto("Ingrese número de edición"));
             String periodicidad = leerTexto("Ingrese periodicidad (ej. Mensual)");
-            Revista nuevaRevista = new Revista(titulo, edicion, periodicidad);
+            CategoriaRecurso categoria = seleccionarCategoria();
+            Revista nuevaRevista = new Revista(titulo, edicion, periodicidad, categoria);
             if (gestorRecursos.agregarRecurso(nuevaRevista)) {
                 mostrarMensaje("Revista agregada con éxito.");
             } else {
@@ -211,7 +214,8 @@ public class Consola {
             String titulo = leerTexto("Ingrese título");
             String narrador = leerTexto("Ingrese narrador");
             int duracion = Integer.parseInt(leerTexto("Ingrese duración en minutos"));
-            Audiolibro nuevoAudiolibro = new Audiolibro(titulo, narrador, duracion);
+            CategoriaRecurso categoria = seleccionarCategoria();
+            Audiolibro nuevoAudiolibro = new Audiolibro(titulo, narrador, duracion, categoria);
             if (gestorRecursos.agregarRecurso(nuevoAudiolibro)) {
                 mostrarMensaje("Audiolibro agregado con éxito.");
             } else {
@@ -341,6 +345,27 @@ public class Consola {
             } else {
             }
         } else {
+        }
+    }
+
+    private CategoriaRecurso seleccionarCategoria() {
+        mostrarMensaje("Seleccione la categoría del recurso:");
+        CategoriaRecurso[] categorias = CategoriaRecurso.values();
+
+        for (int i = 0; i < categorias.length; i++) {
+            System.out.printf("%d. %s%n", i + 1, categorias[i].name());
+        }
+
+        int opcionNum;
+        while (true) {
+            System.out.print("Ingrese el número de la categoría: ");
+            opcionNum = leerOpcion();
+
+            if (opcionNum >= 1 && opcionNum <= categorias.length) {
+                return categorias[opcionNum - 1];
+            } else if (opcionNum != -1) {
+                mostrarMensaje("Número de categoría no válido. Intente de nuevo.");
+            }
         }
     }
 
