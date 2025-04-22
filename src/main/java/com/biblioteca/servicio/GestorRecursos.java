@@ -11,20 +11,23 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Comparator;
 import java.util.stream.Stream;
+import com.biblioteca.excepciones.RecursoDuplicadoException;
+import com.biblioteca.modelo.recurso.RecursoDigital;
+import java.util.Objects;
 
 public class GestorRecursos {
 
 
     private final Map<String, RecursoDigital> recursos = new HashMap<>();
 
-    public boolean agregarRecurso(RecursoDigital recurso) {
-        if (recurso == null || recursos.containsKey(recurso.getIdentificador())) {
-            System.err.println("Error: Intentando agregar recurso nulo o con ID duplicado: " + (recurso != null ? recurso.getIdentificador() : "null"));
-            return false;
+    public void agregarRecurso(RecursoDigital recurso) {
+
+        Objects.requireNonNull(recurso, "El recurso a agregar no puede ser nulo.");
+
+        if (recursos.containsKey(recurso.getIdentificador())) {
+            throw new RecursoDuplicadoException("Ya existe un recurso con el ID: " + recurso.getIdentificador());
         }
         recursos.put(recurso.getIdentificador(), recurso);
-        System.out.println("Recurso agregado: " + recurso.getTitulo() + " (ID: " + recurso.getIdentificador() + ")");
-        return true;
     }
 
     public Optional<RecursoDigital> buscarRecursoPorId(String id) {

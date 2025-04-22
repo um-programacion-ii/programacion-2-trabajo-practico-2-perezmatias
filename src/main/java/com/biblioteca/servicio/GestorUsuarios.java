@@ -8,21 +8,24 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
-
+import com.biblioteca.excepciones.UsuarioDuplicadoException;
+import com.biblioteca.modelo.usuario.Usuario;
+import java.util.Objects;
 
 public class GestorUsuarios {
 
     private final Map<String, Usuario> usuarios = new HashMap<>();
 
-    public boolean agregarUsuario(Usuario usuario) {
-        if (usuario == null || usuarios.containsKey(usuario.getId())) {
+    public void agregarUsuario(Usuario usuario) {
 
-            System.err.println("Error: Intentando agregar usuario nulo o con ID duplicado: " + (usuario != null ? usuario.getId() : "null"));
-            return false;
+        Objects.requireNonNull(usuario, "El usuario a agregar no puede ser nulo.");
+
+        if (usuarios.containsKey(usuario.getId())) {
+
+            throw new UsuarioDuplicadoException("Ya existe un usuario con el ID: " + usuario.getId());
+
         }
         usuarios.put(usuario.getId(), usuario);
-        System.out.println("Usuario agregado: " + usuario.getNombre() + " (ID: " + usuario.getId() + ")");
-        return true;
     }
 
     public Optional<Usuario> buscarUsuarioPorId(String id) {
