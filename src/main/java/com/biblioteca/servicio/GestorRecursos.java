@@ -9,6 +9,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Comparator;
+import java.util.stream.Stream;
 
 public class GestorRecursos {
 
@@ -27,6 +29,16 @@ public class GestorRecursos {
 
     public Optional<RecursoDigital> buscarRecursoPorId(String id) {
         return Optional.ofNullable(recursos.get(id));
+    }
+
+    public List<RecursoDigital> listarTodosLosRecursos(Comparator<RecursoDigital> comparador) {
+        Stream<RecursoDigital> streamRecursos = this.recursos.values().stream();
+
+        if (comparador != null) {
+            streamRecursos = streamRecursos.sorted(comparador);
+        }
+
+        return streamRecursos.collect(Collectors.toList());
     }
 
     public List<RecursoDigital> listarTodosLosRecursos() {
@@ -87,5 +99,4 @@ public class GestorRecursos {
                 .filter(recurso -> tipoClase.isInstance(recurso))
                 .collect(Collectors.toList());
     }
-
 }
