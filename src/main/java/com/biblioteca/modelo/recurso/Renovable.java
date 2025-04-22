@@ -6,6 +6,6 @@ public interface Renovable {
 
     boolean puedeRenovarse(LocalDate fechaActual);
 
-    boolean renovarPrestamo(LocalDate nuevaFechaDevolucion);
+    void renovarPrestamo(LocalDate nuevaFechaDevolucion);
 
 }

@@ -10,4 +10,6 @@ public interface RecursoDigital {
 
     void actualizarEstado(EstadoRecurso nuevoEstado);
 
+    CategoriaRecurso getCategoria();
+
 }
