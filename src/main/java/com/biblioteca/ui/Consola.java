@@ -327,30 +327,31 @@ public class Consola {
         Optional<RecursoDigital> recursoOpt = gestorRecursos.buscarRecursoPorId(recursoId);
         Optional<Usuario> usuarioOpt = gestorUsuarios.buscarUsuarioPorId(usuarioId);
 
-        if (recursoOpt.isEmpty()) {
-            mostrarMensaje("Error: No se encontró el recurso con ID: " + recursoId);
-            return;
-        }
-        if (usuarioOpt.isEmpty()) {
-            mostrarMensaje("Error: No se encontró el usuario con ID: " + usuarioId);
-            return;
-        }
+        if (recursoOpt.isEmpty()) { /* ... manejo de recurso no encontrado ... */ return; }
+        if (usuarioOpt.isEmpty()) { /* ... manejo de usuario no encontrado ... */ return; }
 
         RecursoDigital recurso = recursoOpt.get();
         Usuario usuario = usuarioOpt.get();
 
         if (recurso instanceof Prestable prestableRecurso) {
-            if (prestableRecurso.estaDisponibleParaPrestamo()) {
+            try {
                 LocalDate fechaDevolucion = LocalDate.now().plusDays(14);
                 prestableRecurso.marcarComoPrestado(usuario, fechaDevolucion);
+
                 this.servicioNotificaciones.enviarNotificacion(
                         "PRESTAMO_EXITOSO",
                         usuario.getId(),
                         "Prestamo registrado: '" + recurso.getTitulo() + "' hasta " + fechaDevolucion
                 );
-            } else {
+                mostrarMensaje("Préstamo realizado con éxito.");
+
+            } catch (OperacionNoPermitidaException e) {
+                mostrarMensaje("Error al prestar: " + e.getMessage());
+            } catch (Exception e) {
+                mostrarMensaje("Ocurrió un error inesperado durante el préstamo: " + e.getMessage());
             }
         } else {
+            mostrarMensaje("Error: El recurso '" + recurso.getTitulo() + "' no es del tipo que se pueda prestar.");
         }
     }
 
@@ -360,25 +361,31 @@ public class Consola {
 
         Optional<RecursoDigital> recursoOpt = gestorRecursos.buscarRecursoPorId(recursoId);
 
-        if (recursoOpt.isEmpty()) {
-            mostrarMensaje("Error: No se encontró el recurso con ID: " + recursoId);
-            return;
-        }
+        if (recursoOpt.isEmpty()) { /* ... manejo de recurso no encontrado ... */ return; }
 
         RecursoDigital recurso = recursoOpt.get();
 
         if (recurso instanceof Prestable prestableRecurso) {
-            Optional<Usuario> usuarioOptAnterior = prestableRecurso.getUsuarioPrestamo();
-            String idUsuarioAnterior = usuarioOptAnterior.map(Usuario::getId).orElse("DESCONOCIDO");
+            try {
+                Optional<Usuario> usuarioOptAnterior = prestableRecurso.getUsuarioPrestamo();
+                String idUsuarioAnterior = usuarioOptAnterior.map(Usuario::getId).orElse("DESCONOCIDO");
 
-            prestableRecurso.marcarComoDevuelto();
+                prestableRecurso.marcarComoDevuelto();
 
-            this.servicioNotificaciones.enviarNotificacion(
-                    "DEVOLUCION_EXITOSA",
-                    idUsuarioAnterior,
-                    "Devolución registrada: '" + recurso.getTitulo() + "'"
-            );
+                this.servicioNotificaciones.enviarNotificacion(
+                        "DEVOLUCION_EXITOSA",
+                        idUsuarioAnterior,
+                        "Devolución registrada: '" + recurso.getTitulo() + "'"
+                );
+                mostrarMensaje("Devolución realizada con éxito.");
+
+            } catch (OperacionNoPermitidaException e) {
+                mostrarMensaje("Error al devolver: " + e.getMessage());
+            } catch (Exception e) {
+                mostrarMensaje("Ocurrió un error inesperado durante la devolución: " + e.getMessage());
+            }
         } else {
+            mostrarMensaje("Error: El recurso '" + recurso.getTitulo() + "' no es del tipo que se pueda prestar/devolver.");
         }
     }
 
