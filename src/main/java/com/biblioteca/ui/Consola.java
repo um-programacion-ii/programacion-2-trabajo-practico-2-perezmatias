@@ -20,6 +20,7 @@ import java.time.LocalDate;
 
 import com.biblioteca.servicio.notificaciones.ServicioNotificaciones;
 import java.util.Objects;
+import java.util.List;
 
 public class Consola {
 
@@ -149,9 +150,11 @@ public class Consola {
         System.out.println("3. Agregar Audiolibro");
         System.out.println("4. Listar Todos los Recursos");
         System.out.println("5. Buscar Recurso por ID");
-        System.out.println("6. Prestar Recurso");    // <-- NUEVO
-        System.out.println("7. Devolver Recurso");   // <-- NUEVO
-        System.out.println("8. Renovar Préstamo"); // <-- NUEVO
+        System.out.println("6. Listar Recursos por Categoría");
+        System.out.println("7. Mostrar Categorías Disponibles");
+        System.out.println("8. Prestar Recurso");
+        System.out.println("9. Devolver Recurso");
+        System.out.println("10. Renovar Préstamo");
         System.out.println("0. Volver al menú principal");
         System.out.print("Seleccione una opción: ");
 
@@ -162,10 +165,12 @@ public class Consola {
             case 3: agregarNuevoAudiolibro(); break;
             case 4: listarRecursos(); break;
             case 5: buscarRecurso(); break;
-            case 6: prestarRecurso(); break;    // <-- NUEVO
-            case 7: devolverRecurso(); break;   // <-- NUEVO
-            case 8: renovarRecurso(); break;  // <-- NUEVO
-            case 0: break; // Volver
+            case 6: listarRecursosPorCategoria(); break;
+            case 7: mostrarCategoriasDisponibles(); break;
+            case 8: prestarRecurso(); break;
+            case 9: devolverRecurso(); break;
+            case 10: renovarRecurso(); break;
+            case 0: break;
             default: mostrarMensaje("Opción no válida."); break;
         }
     }
@@ -366,6 +371,31 @@ public class Consola {
             } else if (opcionNum != -1) {
                 mostrarMensaje("Número de categoría no válido. Intente de nuevo.");
             }
+        }
+    }
+
+    private void mostrarCategoriasDisponibles() {
+        mostrarMensaje("--- Categorías Disponibles ---");
+        int i = 1;
+        for (CategoriaRecurso cat : CategoriaRecurso.values()) {
+            System.out.println(i + ". " + cat.name());
+            i++;
+        }
+        System.out.println("----------------------------");
+    }
+
+    private void listarRecursosPorCategoria() {
+        mostrarMensaje("--- Listar Recursos por Categoría ---");
+
+        CategoriaRecurso categoriaSeleccionada = seleccionarCategoria();
+
+        List<RecursoDigital> recursosFiltrados = gestorRecursos.buscarPorCategoria(categoriaSeleccionada);
+
+        if (recursosFiltrados.isEmpty()) {
+            mostrarMensaje("No se encontraron recursos en la categoría: " + categoriaSeleccionada.name());
+        } else {
+            mostrarMensaje("Recursos encontrados en la categoría '" + categoriaSeleccionada.name() + "':");
+            recursosFiltrados.forEach(recurso -> System.out.println(recurso));
         }
     }
 
