@@ -79,4 +79,13 @@ public class GestorRecursos {
                 .collect(Collectors.toList());
     }
 
+    public List<RecursoDigital> filtrarPorTipo(Class<? extends RecursoDigital> tipoClase) {
+        Objects.requireNonNull(tipoClase, "La clase del tipo de recurso no puede ser nula para filtrar.");
+
+        return this.recursos.values()
+                .stream()
+                .filter(recurso -> tipoClase.isInstance(recurso))
+                .collect(Collectors.toList());
+    }
+
 }
