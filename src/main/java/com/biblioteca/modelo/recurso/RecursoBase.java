@@ -1,4 +1,5 @@
 package com.biblioteca.modelo.recurso;
+import com.biblioteca.modelo.recurso.CategoriaRecurso;
 
 import java.util.Objects;
 import java.util.UUID;
@@ -8,10 +9,12 @@ public abstract class RecursoBase implements RecursoDigital {
     protected final String id;
     protected String titulo;
     protected EstadoRecurso estado;
+    protected CategoriaRecurso categoria;
 
-    public RecursoBase(String titulo) {
+    public RecursoBase(String titulo, CategoriaRecurso categoria) {
         this.id = UUID.randomUUID().toString();
         this.titulo = Objects.requireNonNull(titulo, "El título no puede ser nulo");
+        this.categoria = Objects.requireNonNull(categoria, "La categoría no puede ser nula");
         this.estado = EstadoRecurso.DISPONIBLE;
     }
 
@@ -28,6 +31,10 @@ public abstract class RecursoBase implements RecursoDigital {
     @Override
     public EstadoRecurso getEstado() {
         return this.estado;
+    }
+
+    public CategoriaRecurso getCategoria() {
+        return categoria;
     }
 
     @Override
@@ -53,6 +60,7 @@ public abstract class RecursoBase implements RecursoDigital {
     public String toString() {
         return "ID='" + id + '\'' +
                 ", Titulo='" + titulo + '\'' +
+                ", Categoria=" + categoria +
                 ", Estado=" + estado;
     }
 }

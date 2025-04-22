@@ -1,6 +1,7 @@
 package com.biblioteca.modelo.recurso;
 
 import com.biblioteca.modelo.usuario.Usuario;
+import com.biblioteca.modelo.recurso.CategoriaRecurso;
 import java.time.LocalDate;
 import java.util.Objects;
 import java.util.Optional;
@@ -15,8 +16,8 @@ public class Audiolibro extends RecursoBase implements Prestable, Renovable {
 
     private int numeroRenovaciones = 0;
 
-    public Audiolibro(String titulo, String narrador, int duracionMinutos) {
-        super(titulo);
+    public Audiolibro(String titulo, String narrador, int duracionMinutos, CategoriaRecurso categoria) {
+        super(titulo, categoria);
         if (duracionMinutos <= 0) {
             throw new IllegalArgumentException("La duración en minutos debe ser positiva.");
         }

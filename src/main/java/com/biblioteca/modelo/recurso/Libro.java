@@ -1,5 +1,6 @@
 package com.biblioteca.modelo.recurso;
 
+import com.biblioteca.modelo.recurso.CategoriaRecurso;
 import com.biblioteca.modelo.usuario.Usuario;
 import java.time.LocalDate;
 import java.util.Optional;
@@ -14,8 +15,8 @@ public class Libro extends RecursoBase implements Prestable, Renovable {
     private LocalDate fechaDevolucionPrevista = null;
     private int numeroRenovaciones = 0;
 
-    public Libro(String titulo, String autor, String isbn) {
-        super(titulo);
+    public Libro(String titulo, String autor, String isbn, CategoriaRecurso categoria) {
+        super(titulo, categoria);
         this.autor = Objects.requireNonNull(autor, "El autor no puede ser nulo");
         this.isbn = Objects.requireNonNull(isbn, "El ISBN no puede ser nulo");
     }
