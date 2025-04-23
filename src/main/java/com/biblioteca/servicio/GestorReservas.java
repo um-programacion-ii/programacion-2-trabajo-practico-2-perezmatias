@@ -47,8 +47,14 @@ public class GestorReservas {
     }
 
     public Optional<Usuario> obtenerSiguienteUsuarioEnCola(String recursoId) {
-        System.out.println(">>> Lógica de obtenerSiguienteUsuarioEnCola PENDIENTE <<<");
-        throw new UnsupportedOperationException("obtenerSiguienteUsuarioEnCola no implementado todavía.");
+        Objects.requireNonNull(recursoId, "El ID del recurso no puede ser nulo.");
+        BlockingQueue<Usuario> cola = colasDeReserva.get(recursoId);
+
+        if (cola == null || cola.isEmpty()) {
+            return Optional.empty();
+        }
+        Usuario siguienteUsuario = cola.poll();
+        return Optional.ofNullable(siguienteUsuario);
     }
 
     public boolean hayReservas(String recursoId) {
