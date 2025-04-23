@@ -13,12 +13,18 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Objects;
+import com.biblioteca.servicio.notificaciones.ServicioNotificaciones;
+import com.biblioteca.servicio.GestorReservas;
+import com.biblioteca.modelo.recurso.EstadoRecurso;
 
 public class GestorPrestamos {
-
     private final Map<String, Prestamo> prestamosActivosPorRecursoId = new HashMap<>();
+    private final GestorReservas gestorReservas;
+    private final ServicioNotificaciones servicioNotificaciones;
 
-    public GestorPrestamos() {
+    public GestorPrestamos(GestorReservas gestorReservas, ServicioNotificaciones servicioNotificaciones) {
+        this.gestorReservas = Objects.requireNonNull(gestorReservas, "GestorReservas no puede ser nulo.");
+        this.servicioNotificaciones = Objects.requireNonNull(servicioNotificaciones, "ServicioNotificaciones no puede ser nulo.");
     }
 
     public Prestamo realizarPrestamo(Usuario usuario, RecursoDigital recurso, int diasPrestamo) {
@@ -55,25 +61,59 @@ public class GestorPrestamos {
 
     public void registrarDevolucion(String recursoId) {
         Objects.requireNonNull(recursoId, "El ID del recurso no puede ser nulo para la devolución.");
-        Prestamo prestamoActivo = prestamosActivosPorRecursoId.get(recursoId);
+
+        Prestamo prestamoActivo = prestamosActivosPorRecursoId.remove(recursoId);
+
         if (prestamoActivo == null) {
             throw new OperacionNoPermitidaException("No se encontró un préstamo activo para el recurso con ID: " + recursoId);
         }
+
         RecursoDigital recurso = prestamoActivo.getRecurso();
         if (recurso == null) {
-            throw new OperacionNoPermitidaException("Error interno: El préstamo activo (ID: " + prestamoActivo.getIdPrestamo() + ") no tiene un recurso asociado.");
-        }
-        if (!(recurso instanceof Prestable prestable)) {
-            throw new OperacionNoPermitidaException("Error interno: El recurso asociado al préstamo (ID: " + recursoId + ") no es de tipo Prestable.");
+
+            System.err.println("Error CRÍTICO: El préstamo completado (ID: " + prestamoActivo.getIdPrestamo() + ") no tenía un recurso asociado.");
+
+            return;
         }
 
-        try {
-            prestable.marcarComoDevuelto();
-        } catch (Exception e) {
-            System.err.println("Advertencia: Ocurrió un error al intentar marcar el recurso como devuelto, pero se procederá a eliminar el registro del préstamo. Error: " + e.getMessage());
+
+        if (recurso instanceof Prestable prestable) {
+
+            Optional<Usuario> siguienteUsuarioOpt = gestorReservas.obtenerSiguienteUsuarioEnCola(recursoId);
+
+            if (siguienteUsuarioOpt.isPresent()) {
+
+                Usuario siguienteUsuario = siguienteUsuarioOpt.get();
+
+                try {
+                    recurso.actualizarEstado(EstadoRecurso.RESERVADO);
+                    System.out.println("Recurso ID " + recursoId + " devuelto y ahora en estado RESERVADO para " + siguienteUsuario.getNombre());
+
+                    servicioNotificaciones.enviarNotificacion(
+                            "RESERVA_DISPONIBLE",
+                            siguienteUsuario.getId(),
+                            "El recurso '" + recurso.getTitulo() + "' (ID: " + recursoId + ") que reservaste ya está disponible para ti."
+                    );
+
+                } catch (Exception e) {
+                    System.err.println("Error al actualizar estado a RESERVADO o notificar para recurso ID " + recursoId + ": " + e.getMessage());
+                    try { prestable.marcarComoDevuelto(); } catch (Exception ex) { /* Ignorar error secundario */ }
+                }
+
+            } else {
+                try {
+                    prestable.marcarComoDevuelto();
+                    System.out.println("Recurso ID " + recursoId + " devuelto y ahora DISPONIBLE.");
+                } catch (Exception e) {
+                    System.err.println("Error al marcar el recurso ID " + recursoId + " como devuelto: " + e.getMessage());
+                }
+            }
+
+        } else {
+
+            System.err.println("Error CRÍTICO: El recurso devuelto (ID: " + recursoId + ") no implementa Prestable.");
+
         }
-        prestamosActivosPorRecursoId.remove(recursoId);
-        System.out.println("Devolución registrada para recurso ID: " + recursoId);
     }
 
     public Optional<Prestamo> buscarPrestamoPorRecursoId(String recursoId) {

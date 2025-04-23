@@ -6,6 +6,7 @@ import com.biblioteca.ui.Consola;
 import com.biblioteca.servicio.notificaciones.ServicioNotificaciones;
 import com.biblioteca.servicio.notificaciones.ServicioNotificacionesConsola;
 import com.biblioteca.servicio.GestorPrestamos;
+import com.biblioteca.servicio.GestorReservas;
 
 public class BibliotecaApp {
 
@@ -16,7 +17,8 @@ public class BibliotecaApp {
         GestorUsuarios gestorUsuarios = new GestorUsuarios();
         GestorRecursos gestorRecursos = new GestorRecursos();
         ServicioNotificaciones servicioNotificaciones = new ServicioNotificacionesConsola();
-        GestorPrestamos gestorPrestamos = new GestorPrestamos();
+        GestorReservas gestorReservas = new GestorReservas();
+        GestorPrestamos gestorPrestamos = new GestorPrestamos(gestorReservas, servicioNotificaciones);
 
         Consola consola = new Consola(gestorUsuarios, gestorRecursos, servicioNotificaciones, gestorPrestamos);
 
