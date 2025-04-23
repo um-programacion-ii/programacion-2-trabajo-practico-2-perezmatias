@@ -216,6 +216,12 @@ public class Consola {
 
     private void gestionarRecursos() {
         System.out.println("\n--- Gestión de Recursos ---");
+        System.out.println("1. Agregar Libro");
+        System.out.println("2. Agregar Revista");
+        System.out.println("3. Agregar Audiolibro");
+        System.out.println("4. Listar Todos los Recursos");
+        System.out.println("5. Buscar Recurso por ID");
+        System.out.println("6. Buscar Recursos por Título");
         System.out.println("7. Filtrar Recursos por Tipo");
         System.out.println("8. Listar Recursos por Categoría");
         System.out.println("9. Mostrar Categorías Disponibles");
@@ -229,11 +235,55 @@ public class Consola {
 
         int opcion = leerOpcion();
         switch (opcion) {
-            case 12: renovarRecurso(); break;
-            case 13: realizarReservaConsola(); break;
-            case 14: verEstadoReservas(); break;
-            case 0: break;
-            default: mostrarMensaje("Opción no válida."); break;
+            case 1:
+                agregarNuevoLibro();
+                break;
+            case 2:
+                agregarNuevaRevista();
+                break;
+            case 3:
+                agregarNuevoAudiolibro();
+                break;
+            case 4:
+                listarRecursos();
+                break;
+            case 5:
+                buscarRecurso();
+                break;
+            case 6:
+                buscarRecursosPorTitulo();
+                break;
+            case 7:
+                listarRecursosPorTipo();
+                break;
+            case 8:
+                listarRecursosPorCategoria();
+                break;
+            case 9:
+                mostrarCategoriasDisponibles();
+                break;
+            case 10:
+                prestarRecurso();
+                break;
+            case 11:
+                devolverRecurso();
+                break;
+            case 12:
+                renovarRecurso();
+                break;
+            case 13:
+                realizarReservaConsola();
+                break;
+            case 14:
+                verEstadoReservas();
+                break;
+            case 0:
+                break;
+            case -1:
+                break;
+            default:
+                mostrarMensaje("Opción no válida.");
+                break;
         }
     }
 
