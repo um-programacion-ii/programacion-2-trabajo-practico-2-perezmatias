@@ -36,6 +36,10 @@ import java.lang.IllegalArgumentException;
 import com.biblioteca.servicio.GestorReservas;
 import java.util.Map;
 
+import com.biblioteca.servicio.reportes.GeneradorReportes;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Future;
+
 public class Consola {
 
     private final GestorUsuarios gestorUsuarios;
@@ -45,10 +49,12 @@ public class Consola {
     private final GestorPrestamos gestorPrestamos;
     private final GestorReservas gestorReservas;
     private final MonitorVencimientos monitorVencimientos;
+    private final GeneradorReportes generadorReportes;
+    private final ExecutorService executorReportes;
 
     public Consola(GestorUsuarios gestorUsuarios, GestorRecursos gestorRecursos,
                    ServicioNotificaciones servicioNotificaciones, GestorPrestamos gestorPrestamos,
-                   GestorReservas gestorReservas, MonitorVencimientos monitorVencimientos) {
+                   GestorReservas gestorReservas, MonitorVencimientos monitorVencimientos, GeneradorReportes generadorReportes, ExecutorService executorReportes) {
         this.gestorUsuarios = Objects.requireNonNull(gestorUsuarios, "GestorUsuarios no puede ser nulo.");
         this.gestorRecursos = Objects.requireNonNull(gestorRecursos, "GestorRecursos no puede ser nulo.");
         this.scanner = new Scanner(System.in);
@@ -56,6 +62,8 @@ public class Consola {
         this.gestorPrestamos = Objects.requireNonNull(gestorPrestamos, "GestorPrestamos no puede ser nulo.");
         this.gestorReservas = Objects.requireNonNull(gestorReservas, "GestorReservas no puede ser nulo.");
         this.monitorVencimientos = Objects.requireNonNull(monitorVencimientos, "MonitorVencimientos no puede ser nulo.");
+        this.generadorReportes = Objects.requireNonNull(generadorReportes, "GeneradorReportes no puede ser nulo.");
+        this.executorReportes = Objects.requireNonNull(executorReportes, "ExecutorService para reportes no puede ser nulo.");
     }
 
     public void iniciar() {
