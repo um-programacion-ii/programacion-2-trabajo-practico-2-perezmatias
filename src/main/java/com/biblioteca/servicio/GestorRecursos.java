@@ -20,7 +20,7 @@ public class GestorRecursos {
 
     private final Map<String, RecursoDigital> recursos = new HashMap<>();
 
-    public void agregarRecurso(RecursoDigital recurso) {
+    public synchronized void agregarRecurso(RecursoDigital recurso) {
 
         Objects.requireNonNull(recurso, "El recurso a agregar no puede ser nulo.");
 
@@ -49,7 +49,7 @@ public class GestorRecursos {
     }
 
 
-    public boolean eliminarRecurso(String id) {
+    public synchronized boolean eliminarRecurso(String id) {
         RecursoDigital recursoEliminado = recursos.remove(id);
         if (recursoEliminado != null) {
             System.out.println("Recurso eliminado: " + recursoEliminado.getTitulo());
@@ -59,7 +59,7 @@ public class GestorRecursos {
         return false;
     }
 
-    public boolean actualizarRecurso(RecursoDigital recursoActualizado) {
+    public synchronized boolean actualizarRecurso(RecursoDigital recursoActualizado) {
         if (recursoActualizado == null || !recursos.containsKey(recursoActualizado.getIdentificador())) {
             System.err.println("Error: Intentando actualizar recurso nulo o no existente: " + (recursoActualizado != null ? recursoActualizado.getIdentificador() : "null"));
             return false;
