@@ -11,6 +11,9 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.stream.Collectors;
 import java.util.ArrayList;
+import com.biblioteca.modelo.recurso.EstadoRecurso;
+import com.biblioteca.excepciones.OperacionNoPermitidaException;
+import java.util.Objects;
 
 public class GestorReservas {
 
@@ -20,8 +23,27 @@ public class GestorReservas {
     }
 
     public void realizarReserva(Usuario usuario, RecursoDigital recurso) {
-        System.out.println(">>> Lógica de realizarReserva PENDIENTE <<<");
-        throw new UnsupportedOperationException("realizarReserva no implementado todavía.");
+        Objects.requireNonNull(usuario, "El usuario no puede ser nulo para reservar.");
+        Objects.requireNonNull(recurso, "El recurso no puede ser nulo para reservar.");
+        if (recurso.getEstado() != EstadoRecurso.PRESTADO) {
+            throw new OperacionNoPermitidaException("El recurso '" + recurso.getTitulo()
+                    + "' no se puede reservar porque su estado actual es " + recurso.getEstado()
+                    + " (sólo se reservan recursos PRESTADOS).");
+        }
+        BlockingQueue<Usuario> cola = getColaParaRecurso(recurso.getIdentificador());
+
+        if (cola.contains(usuario)) {
+            throw new OperacionNoPermitidaException("El usuario '" + usuario.getNombre()
+                    + "' ya tiene una reserva activa para el recurso '" + recurso.getTitulo() + "'.");
+        }
+        boolean anadido = cola.offer(usuario);
+
+        if (!anadido) {
+            System.err.println("Error crítico: No se pudo añadir al usuario " + usuario.getNombre() + " a la cola de reserva para " + recurso.getTitulo());
+            throw new RuntimeException("No se pudo añadir la reserva a la cola por un problema interno.");
+        }
+
+        System.out.println("Reserva realizada por " + usuario.getNombre() + " para '" + recurso.getTitulo() + "'. Usuarios en cola: " + cola.size());
     }
 
     public Optional<Usuario> obtenerSiguienteUsuarioEnCola(String recursoId) {
