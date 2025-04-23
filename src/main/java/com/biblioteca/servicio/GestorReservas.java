@@ -22,7 +22,7 @@ public class GestorReservas {
     public GestorReservas() {
     }
 
-    public void realizarReserva(Usuario usuario, RecursoDigital recurso) {
+    public synchronized void realizarReserva(Usuario usuario, RecursoDigital recurso) {
         Objects.requireNonNull(usuario, "El usuario no puede ser nulo para reservar.");
         Objects.requireNonNull(recurso, "El recurso no puede ser nulo para reservar.");
         if (recurso.getEstado() != EstadoRecurso.PRESTADO) {
@@ -46,7 +46,7 @@ public class GestorReservas {
         System.out.println("Reserva realizada por " + usuario.getNombre() + " para '" + recurso.getTitulo() + "'. Usuarios en cola: " + cola.size());
     }
 
-    public Optional<Usuario> obtenerSiguienteUsuarioEnCola(String recursoId) {
+    public synchronized Optional<Usuario> obtenerSiguienteUsuarioEnCola(String recursoId) {
         Objects.requireNonNull(recursoId, "El ID del recurso no puede ser nulo.");
         BlockingQueue<Usuario> cola = colasDeReserva.get(recursoId);
 

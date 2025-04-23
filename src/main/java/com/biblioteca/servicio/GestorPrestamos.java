@@ -27,7 +27,7 @@ public class GestorPrestamos {
         this.servicioNotificaciones = Objects.requireNonNull(servicioNotificaciones, "ServicioNotificaciones no puede ser nulo.");
     }
 
-    public Prestamo realizarPrestamo(Usuario usuario, RecursoDigital recurso, int diasPrestamo) {
+    public synchronized Prestamo realizarPrestamo(Usuario usuario, RecursoDigital recurso, int diasPrestamo) {
         Objects.requireNonNull(usuario, "El usuario no puede ser nulo para realizar un préstamo.");
         Objects.requireNonNull(recurso, "El recurso no puede ser nulo para realizar un préstamo.");
         if (diasPrestamo <= 0) {
@@ -59,7 +59,7 @@ public class GestorPrestamos {
         return nuevoPrestamo;
     }
 
-    public void registrarDevolucion(String recursoId) {
+    public synchronized void registrarDevolucion(String recursoId) {
         Objects.requireNonNull(recursoId, "El ID del recurso no puede ser nulo para la devolución.");
 
         Prestamo prestamoActivo = prestamosActivosPorRecursoId.remove(recursoId);

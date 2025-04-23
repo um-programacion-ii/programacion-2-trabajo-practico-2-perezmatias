@@ -16,7 +16,7 @@ public class GestorUsuarios {
 
     private final Map<String, Usuario> usuarios = new HashMap<>();
 
-    public void agregarUsuario(Usuario usuario) {
+    public synchronized void agregarUsuario(Usuario usuario) {
 
         Objects.requireNonNull(usuario, "El usuario a agregar no puede ser nulo.");
 
@@ -39,7 +39,7 @@ public class GestorUsuarios {
     }
 
 
-    public boolean eliminarUsuario(String id) {
+    public synchronized boolean eliminarUsuario(String id) {
         Usuario usuarioEliminado = usuarios.remove(id);
         if (usuarioEliminado != null) {
             System.out.println("Usuario eliminado: " + usuarioEliminado.getNombre());
@@ -50,7 +50,7 @@ public class GestorUsuarios {
     }
 
 
-    public boolean actualizarUsuario(Usuario usuarioActualizado) {
+    public synchronized boolean actualizarUsuario(Usuario usuarioActualizado) {
         if (usuarioActualizado == null || !usuarios.containsKey(usuarioActualizado.getId())) {
             System.err.println("Error: Intentando actualizar usuario nulo o no existente: " + (usuarioActualizado != null ? usuarioActualizado.getId() : "null"));
             return false;
