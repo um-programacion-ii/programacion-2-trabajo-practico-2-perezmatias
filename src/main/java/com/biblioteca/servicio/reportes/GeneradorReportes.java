@@ -13,6 +13,7 @@ import java.util.Objects;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.stream.Collectors;
+import java.util.Collections;
 
 public class GeneradorReportes {
 
@@ -52,7 +53,15 @@ public class GeneradorReportes {
     }
 
     public Map<CategoriaRecurso, Long> getEstadisticasPorCategoria() {
-        System.out.println(">>> Lógica de getEstadisticasPorCategoria PENDIENTE <<<");
-        throw new UnsupportedOperationException("getEstadisticasPorCategoria no implementado todavía.");
+        List<RecursoDigital> todosLosRecursos = this.gestorRecursos.listarTodosLosRecursos();
+        if (todosLosRecursos.isEmpty()) {
+            return Collections.emptyMap();
+        }
+        return todosLosRecursos.stream()
+                .filter(recurso -> recurso.getCategoria() != null)
+                .collect(Collectors.groupingBy(
+                        RecursoDigital::getCategoria,
+                        Collectors.counting()
+                ));
     }
 }
