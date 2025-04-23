@@ -56,6 +56,14 @@ public class GestorPrestamos {
         prestamosActivosPorRecursoId.put(recurso.getIdentificador(), nuevoPrestamo);
 
         System.out.println("Préstamo creado exitosamente: ID " + nuevoPrestamo.getIdPrestamo());
+        try {
+            usuario.incrementarPrestamosRealizados();
+            recurso.incrementarVecesPrestado();
+        } catch (Exception e) {
+            System.err.println("Advertencia: No se pudieron incrementar los contadores para el préstamo "
+                    + nuevoPrestamo.getIdPrestamo() + ". Error: " + e.getMessage());
+        }
+        System.out.println("Préstamo creado exitosamente: ID " + nuevoPrestamo.getIdPrestamo());
         return nuevoPrestamo;
     }
 

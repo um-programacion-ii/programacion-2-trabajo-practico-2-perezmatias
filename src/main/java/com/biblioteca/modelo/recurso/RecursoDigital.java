@@ -12,4 +12,8 @@ public interface RecursoDigital {
 
     CategoriaRecurso getCategoria();
 
+    void incrementarVecesPrestado();
+
+    int getVecesPrestado();
+
 }

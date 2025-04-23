@@ -28,12 +28,17 @@ import java.util.Comparator;
 import com.biblioteca.excepciones.UsuarioDuplicadoException;
 import com.biblioteca.excepciones.RecursoDuplicadoException;
 import com.biblioteca.excepciones.OperacionNoPermitidaException;
+import com.biblioteca.servicio.alertas.MonitorVencimientos;
 import com.biblioteca.servicio.GestorPrestamos;
 
 import com.biblioteca.modelo.prestamo.Prestamo;
 import java.lang.IllegalArgumentException;
 import com.biblioteca.servicio.GestorReservas;
 import java.util.Map;
+
+import com.biblioteca.servicio.reportes.GeneradorReportes;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Future;
 
 public class Consola {
 
@@ -43,16 +48,22 @@ public class Consola {
     private final ServicioNotificaciones servicioNotificaciones;
     private final GestorPrestamos gestorPrestamos;
     private final GestorReservas gestorReservas;
+    private final MonitorVencimientos monitorVencimientos;
+    private final GeneradorReportes generadorReportes;
+    private final ExecutorService executorReportes;
 
     public Consola(GestorUsuarios gestorUsuarios, GestorRecursos gestorRecursos,
                    ServicioNotificaciones servicioNotificaciones, GestorPrestamos gestorPrestamos,
-                   GestorReservas gestorReservas) {
+                   GestorReservas gestorReservas, MonitorVencimientos monitorVencimientos, GeneradorReportes generadorReportes, ExecutorService executorReportes) {
         this.gestorUsuarios = Objects.requireNonNull(gestorUsuarios, "GestorUsuarios no puede ser nulo.");
         this.gestorRecursos = Objects.requireNonNull(gestorRecursos, "GestorRecursos no puede ser nulo.");
         this.scanner = new Scanner(System.in);
         this.servicioNotificaciones = Objects.requireNonNull(servicioNotificaciones, "ServicioNotificaciones no puede ser nulo.");
         this.gestorPrestamos = Objects.requireNonNull(gestorPrestamos, "GestorPrestamos no puede ser nulo.");
         this.gestorReservas = Objects.requireNonNull(gestorReservas, "GestorReservas no puede ser nulo.");
+        this.monitorVencimientos = Objects.requireNonNull(monitorVencimientos, "MonitorVencimientos no puede ser nulo.");
+        this.generadorReportes = Objects.requireNonNull(generadorReportes, "GeneradorReportes no puede ser nulo.");
+        this.executorReportes = Objects.requireNonNull(executorReportes, "ExecutorService para reportes no puede ser nulo.");
     }
 
     public void iniciar() {
@@ -71,6 +82,8 @@ public class Consola {
         System.out.println("\n--- Biblioteca Digital ---");
         System.out.println("1. Gestionar Usuarios");
         System.out.println("2. Gestionar Recursos");
+        System.out.println("3. Verificar Préstamos Vencidos/Por Vencer");
+        System.out.println("4. Reportes y Análisis");
         System.out.println("0. Salir");
         System.out.print("Seleccione una opción: ");
     }
@@ -98,18 +111,45 @@ public class Consola {
 
     private void procesarOpcionPrincipal(int opcion) {
         switch (opcion) {
+            case 1: gestionarUsuarios(); break;
+            case 2: gestionarRecursos(); break;
+            case 3: verificarVencimientosConsola(); break;
+            case 4: mostrarMenuReportes(); break;
+            case 0: /* Salir */ break;
+            case -1: /* Error lectura */ break;
+            default: mostrarMensaje("Opción no válida."); break;
+        }
+    }
+
+    private void mostrarMenuReportes() {
+        System.out.println("\n--- Reportes y Análisis ---");
+        System.out.println("1. Ver Top 5 Recursos Más Prestados");
+        System.out.println("2. Ver Top 5 Usuarios Más Activos");
+        System.out.println("3. Ver Estadísticas por Categoría");
+        System.out.println("0. Volver al menú principal");
+        System.out.print("Seleccione una opción de reporte: ");
+
+        int opcionReporte = leerOpcion();
+        procesarOpcionReportes(opcionReporte);
+    }
+
+    private void procesarOpcionReportes(int opcion) {
+        switch (opcion) {
             case 1:
-                gestionarUsuarios();
+                generarReporteMasPrestados(5);
                 break;
             case 2:
-                gestionarRecursos();
+                generarReporteMasActivos(5);
+                break;
+            case 3:
+                generarReporteStatsCategoria();
                 break;
             case 0:
                 break;
             case -1:
                 break;
             default:
-                mostrarMensaje("Opción no válida. Intente de nuevo.");
+                mostrarMensaje("Opción de reporte no válida.");
                 break;
         }
     }
@@ -176,6 +216,12 @@ public class Consola {
 
     private void gestionarRecursos() {
         System.out.println("\n--- Gestión de Recursos ---");
+        System.out.println("1. Agregar Libro");
+        System.out.println("2. Agregar Revista");
+        System.out.println("3. Agregar Audiolibro");
+        System.out.println("4. Listar Todos los Recursos");
+        System.out.println("5. Buscar Recurso por ID");
+        System.out.println("6. Buscar Recursos por Título");
         System.out.println("7. Filtrar Recursos por Tipo");
         System.out.println("8. Listar Recursos por Categoría");
         System.out.println("9. Mostrar Categorías Disponibles");
@@ -189,11 +235,55 @@ public class Consola {
 
         int opcion = leerOpcion();
         switch (opcion) {
-            case 12: renovarRecurso(); break;
-            case 13: realizarReservaConsola(); break;
-            case 14: verEstadoReservas(); break;
-            case 0: break;
-            default: mostrarMensaje("Opción no válida."); break;
+            case 1:
+                agregarNuevoLibro();
+                break;
+            case 2:
+                agregarNuevaRevista();
+                break;
+            case 3:
+                agregarNuevoAudiolibro();
+                break;
+            case 4:
+                listarRecursos();
+                break;
+            case 5:
+                buscarRecurso();
+                break;
+            case 6:
+                buscarRecursosPorTitulo();
+                break;
+            case 7:
+                listarRecursosPorTipo();
+                break;
+            case 8:
+                listarRecursosPorCategoria();
+                break;
+            case 9:
+                mostrarCategoriasDisponibles();
+                break;
+            case 10:
+                prestarRecurso();
+                break;
+            case 11:
+                devolverRecurso();
+                break;
+            case 12:
+                renovarRecurso();
+                break;
+            case 13:
+                realizarReservaConsola();
+                break;
+            case 14:
+                verEstadoReservas();
+                break;
+            case 0:
+                break;
+            case -1:
+                break;
+            default:
+                mostrarMensaje("Opción no válida.");
+                break;
         }
     }
 
@@ -615,6 +705,90 @@ public class Consola {
             }
         }
         System.out.println("---------------------------------");
+    }
+
+    private void verificarVencimientosConsola() {
+        try {
+            monitorVencimientos.verificarVencimientos();
+            mostrarMensaje("Verificación de vencimientos completada.");
+        } catch (Exception e) {
+            mostrarMensaje("Ocurrió un error durante la verificación de vencimientos: " + e.getMessage());
+        }
+    }
+
+    private void generarReporteMasPrestados(int n) {
+        mostrarMensaje("Generando reporte 'Top " + n + " Recursos Más Prestados'...");
+        executorReportes.execute(() -> {
+            try {
+                List<RecursoDigital> topRecursos = generadorReportes.getTopNRecursosMasPrestados(n);
+                System.out.println("\n--- Reporte: Top " + n + " Recursos Más Prestados ---");
+                if (topRecursos.isEmpty()) {
+                    System.out.println("No hay datos suficientes para generar este reporte.");
+                } else {
+                    int rank = 1;
+                    for (RecursoDigital r : topRecursos) {
+                        System.out.printf("%d. '%s' (Prestado %d veces) - Cat: %s, ID: %s%n",
+                                rank++,
+                                r.getTitulo(),
+                                r.getVecesPrestado(),
+                                r.getCategoria().name(),
+                                r.getIdentificador());
+                    }
+                }
+                System.out.println("----------------------------------------------");
+            } catch (Exception e) {
+                System.err.println("\nError al generar reporte 'Más Prestados': " + e.getMessage());
+                // e.printStackTrace(); // Útil para depurar
+            }
+        });
+    }
+
+    private void generarReporteMasActivos(int n) {
+        mostrarMensaje("Generando reporte 'Top " + n + " Usuarios Más Activos'...");
+        executorReportes.execute(() -> {
+            try {
+                List<Usuario> topUsuarios = generadorReportes.getTopNUsuariosMasActivos(n);
+
+                System.out.println("\n--- Reporte: Top " + n + " Usuarios Más Activos ---");
+                if (topUsuarios.isEmpty()) {
+                    System.out.println("No hay datos suficientes para generar este reporte.");
+                } else {
+                    int rank = 1;
+                    for (Usuario u : topUsuarios) {
+                        System.out.printf("%d. %s (Email: %s, Préstamos: %d) - ID: %s%n",
+                                rank++,
+                                u.getNombre(),
+                                u.getEmail(),
+                                u.getPrestamosRealizados(),
+                                u.getId());
+                    }
+                }
+                System.out.println("-------------------------------------------");
+            } catch (Exception e) {
+                System.err.println("\nError al generar reporte 'Usuarios Activos': " + e.getMessage());
+            }
+        });
+    }
+
+    private void generarReporteStatsCategoria() {
+        mostrarMensaje("Generando reporte 'Estadísticas por Categoría'...");
+        executorReportes.execute(() -> {
+            try {
+                Map<CategoriaRecurso, Long> stats = generadorReportes.getEstadisticasPorCategoria();
+
+                System.out.println("\n--- Reporte: Recursos por Categoría ---");
+                if (stats.isEmpty()) {
+                    System.out.println("No hay recursos registrados para generar estadísticas.");
+                } else {
+                    stats.forEach((categoria, cantidad) ->
+                            System.out.printf("- %-20s : %d recurso(s)%n", categoria.name(), cantidad)
+                    );
+                }
+                System.out.println("---------------------------------------");
+            } catch (Exception e) {
+                System.err.println("\nError al generar reporte 'Estadísticas por Categoría': " + e.getMessage());
+            }
+        });
     }
 
     public void cerrarScanner() {

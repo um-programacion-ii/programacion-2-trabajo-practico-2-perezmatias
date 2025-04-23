@@ -10,12 +10,21 @@ public abstract class RecursoBase implements RecursoDigital {
     protected String titulo;
     protected EstadoRecurso estado;
     protected CategoriaRecurso categoria;
+    protected int vecesPrestado = 0;
 
     public RecursoBase(String titulo, CategoriaRecurso categoria) {
         this.id = UUID.randomUUID().toString();
         this.titulo = Objects.requireNonNull(titulo, "El título no puede ser nulo");
         this.categoria = Objects.requireNonNull(categoria, "La categoría no puede ser nula");
         this.estado = EstadoRecurso.DISPONIBLE;
+    }
+
+    public int getVecesPrestado() {
+        return vecesPrestado;
+    }
+
+    public synchronized void incrementarVecesPrestado() {
+        this.vecesPrestado++;
     }
 
     @Override
