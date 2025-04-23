@@ -39,8 +39,16 @@ public class GeneradorReportes {
     }
 
     public List<Usuario> getTopNUsuariosMasActivos(int n) {
-        System.out.println(">>> Lógica de getTopNUsuariosMasActivos PENDIENTE <<<");
-        throw new UnsupportedOperationException("getTopNUsuariosMasActivos no implementado todavía.");
+        if (n <= 0) {
+            System.err.println("Advertencia: El número 'n' para el top debe ser positivo.");
+            return new ArrayList<>();
+        }
+        List<Usuario> todosLosUsuarios = this.gestorUsuarios.listarTodosLosUsuarios();
+
+        return todosLosUsuarios.stream()
+                .sorted(Comparator.comparingInt(Usuario::getPrestamosRealizados).reversed())
+                .limit(n)
+                .collect(Collectors.toList());
     }
 
     public Map<CategoriaRecurso, Long> getEstadisticasPorCategoria() {
