@@ -611,6 +611,21 @@ Crear el sistema de préstamos que utilice hilos y el patrón productor-consumid
 
 ## 📝 Consideraciones Éticas
 
+## Uso de Asistencia de IA (Google Gemini)
+
+Siguiendo las pautas de integridad académica y transparencia establecidas para este trabajo práctico, se declara el uso de la herramienta de inteligencia artificial Google Gemini como asistente durante el desarrollo.
+
+La asistencia de IA se utilizó específicamente en las siguientes áreas:
+
+* **Resolución de Errores:** Ayuda en la identificación y corrección de errores de compilación y runtime encontrados durante la codificación.
+* **Estructuración de Tareas:** Sugerencias para organizar y describir los Issues de GitHub correspondientes a cada etapa del desarrollo.
+* **Estructura del Proyecto:** Recomendaciones sobre la adopción de la estructura estándar de paquetes y carpetas para proyectos Java (`src/main/java`, etc.).
+* **Guía y Planificación:** Asistencia en la interpretación inicial de los requisitos y en la planificación del desarrollo de las funcionalidades solicitadas.
+
+**Autoría del Código:**
+
+Es importante destacar que **el codigo presentado y logica utilizada son de autoria propia**. La IA funcionó como una herramienta de apoyo para superar bloqueos (errores), organizar el trabajo y obtener guía sobre convenciones estándar.
+
 ### Uso de Inteligencia Artificial
 El uso de herramientas de IA en este trabajo práctico debe seguir las siguientes pautas:
 
