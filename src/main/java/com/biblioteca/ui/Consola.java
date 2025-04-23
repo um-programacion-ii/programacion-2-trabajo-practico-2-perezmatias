@@ -28,6 +28,7 @@ import java.util.Comparator;
 import com.biblioteca.excepciones.UsuarioDuplicadoException;
 import com.biblioteca.excepciones.RecursoDuplicadoException;
 import com.biblioteca.excepciones.OperacionNoPermitidaException;
+import com.biblioteca.servicio.alertas.MonitorVencimientos;
 import com.biblioteca.servicio.GestorPrestamos;
 
 import com.biblioteca.modelo.prestamo.Prestamo;
@@ -43,16 +44,18 @@ public class Consola {
     private final ServicioNotificaciones servicioNotificaciones;
     private final GestorPrestamos gestorPrestamos;
     private final GestorReservas gestorReservas;
+    private final MonitorVencimientos monitorVencimientos;
 
     public Consola(GestorUsuarios gestorUsuarios, GestorRecursos gestorRecursos,
                    ServicioNotificaciones servicioNotificaciones, GestorPrestamos gestorPrestamos,
-                   GestorReservas gestorReservas) {
+                   GestorReservas gestorReservas, MonitorVencimientos monitorVencimientos) {
         this.gestorUsuarios = Objects.requireNonNull(gestorUsuarios, "GestorUsuarios no puede ser nulo.");
         this.gestorRecursos = Objects.requireNonNull(gestorRecursos, "GestorRecursos no puede ser nulo.");
         this.scanner = new Scanner(System.in);
         this.servicioNotificaciones = Objects.requireNonNull(servicioNotificaciones, "ServicioNotificaciones no puede ser nulo.");
         this.gestorPrestamos = Objects.requireNonNull(gestorPrestamos, "GestorPrestamos no puede ser nulo.");
         this.gestorReservas = Objects.requireNonNull(gestorReservas, "GestorReservas no puede ser nulo.");
+        this.monitorVencimientos = Objects.requireNonNull(monitorVencimientos, "MonitorVencimientos no puede ser nulo.");
     }
 
     public void iniciar() {
@@ -71,6 +74,7 @@ public class Consola {
         System.out.println("\n--- Biblioteca Digital ---");
         System.out.println("1. Gestionar Usuarios");
         System.out.println("2. Gestionar Recursos");
+        System.out.println("3. Verificar Préstamos Vencidos/Por Vencer");
         System.out.println("0. Salir");
         System.out.print("Seleccione una opción: ");
     }
@@ -103,6 +107,9 @@ public class Consola {
                 break;
             case 2:
                 gestionarRecursos();
+                break;
+            case 3:
+                verificarVencimientosConsola();
                 break;
             case 0:
                 break;
@@ -615,6 +622,15 @@ public class Consola {
             }
         }
         System.out.println("---------------------------------");
+    }
+
+    private void verificarVencimientosConsola() {
+        try {
+            monitorVencimientos.verificarVencimientos();
+            mostrarMensaje("Verificación de vencimientos completada.");
+        } catch (Exception e) {
+            mostrarMensaje("Ocurrió un error durante la verificación de vencimientos: " + e.getMessage());
+        }
     }
 
     public void cerrarScanner() {

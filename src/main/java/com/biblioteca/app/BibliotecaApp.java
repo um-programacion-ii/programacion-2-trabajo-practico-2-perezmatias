@@ -10,22 +10,27 @@ import com.biblioteca.servicio.GestorReservas;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
+import com.biblioteca.servicio.alertas.MonitorVencimientos;
+
 
 public class BibliotecaApp {
 
     public static void main(String[] args) {
         System.out.println("Iniciando Biblioteca Digital...");
-        ExecutorService executorNotificaciones = Executors.newSingleThreadExecutor();
 
         GestorUsuarios gestorUsuarios = new GestorUsuarios();
         GestorRecursos gestorRecursos = new GestorRecursos();
         GestorReservas gestorReservas = new GestorReservas();
 
+        ExecutorService executorNotificaciones = Executors.newSingleThreadExecutor();
+
         ServicioNotificaciones servicioNotificaciones = new ServicioNotificacionesConsola(executorNotificaciones);
 
         GestorPrestamos gestorPrestamos = new GestorPrestamos(gestorReservas, servicioNotificaciones);
 
-        Consola consola = new Consola(gestorUsuarios, gestorRecursos, servicioNotificaciones, gestorPrestamos, gestorReservas);
+        MonitorVencimientos monitorVencimientos = new MonitorVencimientos(gestorPrestamos, servicioNotificaciones);
+
+        Consola consola = new Consola(gestorUsuarios, gestorRecursos, servicioNotificaciones, gestorPrestamos, gestorReservas, monitorVencimientos);
 
         try {
             consola.iniciar();
