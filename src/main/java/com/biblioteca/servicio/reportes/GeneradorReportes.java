@@ -10,6 +10,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.stream.Collectors;
+
 public class GeneradorReportes {
 
     private final GestorRecursos gestorRecursos;
@@ -21,8 +25,17 @@ public class GeneradorReportes {
     }
 
     public List<RecursoDigital> getTopNRecursosMasPrestados(int n) {
-        System.out.println(">>> Lógica de getTopNRecursosMasPrestados PENDIENTE <<<");
-        throw new UnsupportedOperationException("getTopNRecursosMasPrestados no implementado todavía.");
+        if (n <= 0) {
+            System.err.println("Advertencia: El número 'n' para el top debe ser positivo.");
+            return new ArrayList<>();
+        }
+
+        List<RecursoDigital> todosLosRecursos = this.gestorRecursos.listarTodosLosRecursos();
+
+        return todosLosRecursos.stream()
+                .sorted(Comparator.comparingInt(RecursoDigital::getVecesPrestado).reversed())
+                .limit(n)
+                .collect(Collectors.toList());
     }
 
     public List<Usuario> getTopNUsuariosMasActivos(int n) {

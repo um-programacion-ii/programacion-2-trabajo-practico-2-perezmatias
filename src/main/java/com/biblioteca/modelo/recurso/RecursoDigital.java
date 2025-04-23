@@ -14,4 +14,6 @@ public interface RecursoDigital {
 
     void incrementarVecesPrestado();
 
+    int getVecesPrestado();
+
 }
