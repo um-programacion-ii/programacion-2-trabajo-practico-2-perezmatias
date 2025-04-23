@@ -54,8 +54,26 @@ public class GestorPrestamos {
     }
 
     public void registrarDevolucion(String recursoId) {
-        System.out.println(">>> Lógica de registrarDevolucion PENDIENTE <<<");
-        throw new UnsupportedOperationException("registrarDevolucion no implementado todavía.");
+        Objects.requireNonNull(recursoId, "El ID del recurso no puede ser nulo para la devolución.");
+        Prestamo prestamoActivo = prestamosActivosPorRecursoId.get(recursoId);
+        if (prestamoActivo == null) {
+            throw new OperacionNoPermitidaException("No se encontró un préstamo activo para el recurso con ID: " + recursoId);
+        }
+        RecursoDigital recurso = prestamoActivo.getRecurso();
+        if (recurso == null) {
+            throw new OperacionNoPermitidaException("Error interno: El préstamo activo (ID: " + prestamoActivo.getIdPrestamo() + ") no tiene un recurso asociado.");
+        }
+        if (!(recurso instanceof Prestable prestable)) {
+            throw new OperacionNoPermitidaException("Error interno: El recurso asociado al préstamo (ID: " + recursoId + ") no es de tipo Prestable.");
+        }
+
+        try {
+            prestable.marcarComoDevuelto();
+        } catch (Exception e) {
+            System.err.println("Advertencia: Ocurrió un error al intentar marcar el recurso como devuelto, pero se procederá a eliminar el registro del préstamo. Error: " + e.getMessage());
+        }
+        prestamosActivosPorRecursoId.remove(recursoId);
+        System.out.println("Devolución registrada para recurso ID: " + recursoId);
     }
 
     public Optional<Prestamo> buscarPrestamoPorRecursoId(String recursoId) {
