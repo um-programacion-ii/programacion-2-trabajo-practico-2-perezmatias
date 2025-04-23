@@ -33,6 +33,7 @@ import com.biblioteca.servicio.GestorPrestamos;
 import com.biblioteca.modelo.prestamo.Prestamo;
 import java.lang.IllegalArgumentException;
 import com.biblioteca.servicio.GestorReservas;
+import java.util.Map;
 
 public class Consola {
 
@@ -182,18 +183,15 @@ public class Consola {
         System.out.println("11. Devolver Recurso");
         System.out.println("12. Renovar Préstamo");
         System.out.println("13. Realizar Reserva");
+        System.out.println("14. Ver Estado de Reservas");
         System.out.println("0. Volver al menú principal");
         System.out.print("Seleccione una opción: ");
 
         int opcion = leerOpcion();
         switch (opcion) {
-            case 7: listarRecursosPorTipo(); break;
-            case 8: listarRecursosPorCategoria(); break;
-            case 9: mostrarCategoriasDisponibles(); break;
-            case 10: prestarRecurso(); break;
-            case 11: devolverRecurso(); break;
             case 12: renovarRecurso(); break;
             case 13: realizarReservaConsola(); break;
+            case 14: verEstadoReservas(); break;
             case 0: break;
             default: mostrarMensaje("Opción no válida."); break;
         }
@@ -586,6 +584,37 @@ public class Consola {
         } catch (Exception e) {
             mostrarMensaje("Ocurrió un error inesperado al realizar la reserva: " + e.getMessage());
         }
+    }
+
+    private void verEstadoReservas() {
+        mostrarMensaje("--- Estado Actual de Reservas ---");
+        Map<String, List<String>> estadoReservas = gestorReservas.getEstadoReservas();
+
+        if (estadoReservas.isEmpty()) {
+            mostrarMensaje("Actualmente no hay ninguna reserva activa.");
+            return;
+        }
+
+        mostrarMensaje("Recursos con usuarios en cola de espera:");
+        for (Map.Entry<String, List<String>> entry : estadoReservas.entrySet()) {
+            String recursoId = entry.getKey();
+            List<String> nombresUsuarios = entry.getValue();
+            String tituloRecurso = gestorRecursos.buscarRecursoPorId(recursoId)
+                    .map(RecursoDigital::getTitulo)
+                    .orElse("ID Desconocido/Inválido");
+
+            System.out.println("\n* Recurso: " + tituloRecurso + " (ID: " + recursoId + ")");
+            if (nombresUsuarios.isEmpty()) {
+                System.out.println("  (Cola vacía - posible estado inconsistente)");
+            } else {
+                int posicion = 1;
+                for (String nombreUsuario : nombresUsuarios) {
+                    System.out.println("  " + posicion + ". " + nombreUsuario);
+                    posicion++;
+                }
+            }
+        }
+        System.out.println("---------------------------------");
     }
 
     public void cerrarScanner() {
