@@ -20,7 +20,7 @@ public class BibliotecaApp {
         GestorReservas gestorReservas = new GestorReservas();
         GestorPrestamos gestorPrestamos = new GestorPrestamos(gestorReservas, servicioNotificaciones);
 
-        Consola consola = new Consola(gestorUsuarios, gestorRecursos, servicioNotificaciones, gestorPrestamos);
+        Consola consola = new Consola(gestorUsuarios, gestorRecursos, servicioNotificaciones, gestorPrestamos,gestorReservas);
 
         try {
             consola.iniciar();

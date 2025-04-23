@@ -32,6 +32,7 @@ import com.biblioteca.servicio.GestorPrestamos;
 
 import com.biblioteca.modelo.prestamo.Prestamo;
 import java.lang.IllegalArgumentException;
+import com.biblioteca.servicio.GestorReservas;
 
 public class Consola {
 
@@ -40,14 +41,17 @@ public class Consola {
     private final Scanner scanner;
     private final ServicioNotificaciones servicioNotificaciones;
     private final GestorPrestamos gestorPrestamos;
+    private final GestorReservas gestorReservas;
 
     public Consola(GestorUsuarios gestorUsuarios, GestorRecursos gestorRecursos,
-                   ServicioNotificaciones servicioNotificaciones, GestorPrestamos gestorPrestamos) {
+                   ServicioNotificaciones servicioNotificaciones, GestorPrestamos gestorPrestamos,
+                   GestorReservas gestorReservas) {
         this.gestorUsuarios = Objects.requireNonNull(gestorUsuarios, "GestorUsuarios no puede ser nulo.");
         this.gestorRecursos = Objects.requireNonNull(gestorRecursos, "GestorRecursos no puede ser nulo.");
         this.scanner = new Scanner(System.in);
         this.servicioNotificaciones = Objects.requireNonNull(servicioNotificaciones, "ServicioNotificaciones no puede ser nulo.");
         this.gestorPrestamos = Objects.requireNonNull(gestorPrestamos, "GestorPrestamos no puede ser nulo.");
+        this.gestorReservas = Objects.requireNonNull(gestorReservas, "GestorReservas no puede ser nulo.");
     }
 
     public void iniciar() {
@@ -171,35 +175,25 @@ public class Consola {
 
     private void gestionarRecursos() {
         System.out.println("\n--- Gestión de Recursos ---");
-        System.out.println("1. Agregar Libro");
-        System.out.println("2. Agregar Revista");
-        System.out.println("3. Agregar Audiolibro");
-        System.out.println("4. Listar Todos los Recursos");
-        System.out.println("5. Buscar Recurso por ID");
-        System.out.println("6. Buscar Recursos por Título");
         System.out.println("7. Filtrar Recursos por Tipo");
         System.out.println("8. Listar Recursos por Categoría");
         System.out.println("9. Mostrar Categorías Disponibles");
         System.out.println("10. Prestar Recurso");
         System.out.println("11. Devolver Recurso");
         System.out.println("12. Renovar Préstamo");
+        System.out.println("13. Realizar Reserva");
         System.out.println("0. Volver al menú principal");
         System.out.print("Seleccione una opción: ");
 
         int opcion = leerOpcion();
         switch (opcion) {
-            case 1: agregarNuevoLibro(); break;
-            case 2: agregarNuevaRevista(); break;
-            case 3: agregarNuevoAudiolibro(); break;
-            case 4: listarRecursos(); break;
-            case 5: buscarRecurso(); break;
-            case 6: buscarRecursosPorTitulo(); break;
             case 7: listarRecursosPorTipo(); break;
             case 8: listarRecursosPorCategoria(); break;
             case 9: mostrarCategoriasDisponibles(); break;
             case 10: prestarRecurso(); break;
             case 11: devolverRecurso(); break;
             case 12: renovarRecurso(); break;
+            case 13: realizarReservaConsola(); break;
             case 0: break;
             default: mostrarMensaje("Opción no válida."); break;
         }
@@ -556,6 +550,41 @@ public class Consola {
         } else {
             mostrarMensaje("Usuarios encontrados con '" + textoBusqueda + "' en nombre o email:");
             usuariosEncontrados.forEach(usuario -> System.out.println(usuario));
+        }
+    }
+
+    private void realizarReservaConsola() {
+        mostrarMensaje("--- Realizar Reserva ---");
+        try {
+            String recursoId = leerTexto("Ingrese ID del recurso a reservar");
+            String usuarioId = leerTexto("Ingrese su ID de usuario");
+
+            RecursoDigital recurso = gestorRecursos.buscarRecursoPorId(recursoId).orElse(null);
+            Usuario usuario = gestorUsuarios.buscarUsuarioPorId(usuarioId).orElse(null);
+
+            if (recurso == null) {
+                mostrarMensaje("Error: Recurso con ID " + recursoId + " no encontrado.");
+                return;
+            }
+            if (usuario == null) {
+                mostrarMensaje("Error: Usuario con ID " + usuarioId + " no encontrado.");
+                return;
+            }
+
+            this.gestorReservas.realizarReserva(usuario, recurso);
+
+            mostrarMensaje("Reserva realizada con éxito para el recurso '" + recurso.getTitulo() + "'.");
+
+            this.servicioNotificaciones.enviarNotificacion(
+                    "RESERVA_REGISTRADA",
+                    usuario.getId(),
+                    "Se ha registrado su reserva para el recurso: '" + recurso.getTitulo() + "' (ID: " + recurso.getIdentificador() + ")"
+            );
+
+        } catch (OperacionNoPermitidaException e) {
+            mostrarMensaje("Error al reservar: " + e.getMessage());
+        } catch (Exception e) {
+            mostrarMensaje("Ocurrió un error inesperado al realizar la reserva: " + e.getMessage());
         }
     }
 
