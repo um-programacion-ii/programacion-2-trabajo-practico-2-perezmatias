@@ -8,6 +8,7 @@ public class Usuario {
     private final String id;
     private String nombre;
     private String email;
+    private int prestamosRealizados = 0;
 
 
     public Usuario(String nombre, String email) {
@@ -31,6 +32,13 @@ public class Usuario {
         return email;
     }
 
+    public int getPrestamosRealizados() {
+        return prestamosRealizados;
+    }
+
+    public synchronized void incrementarPrestamosRealizados() {
+        this.prestamosRealizados++;
+    }
 
     public void setNombre(String nombre) {
         this.nombre = Objects.requireNonNull(nombre, "El nombre no puede ser nulo");
