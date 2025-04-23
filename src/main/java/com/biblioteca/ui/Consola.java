@@ -372,33 +372,21 @@ public class Consola {
         mostrarMensaje("--- Devolver Recurso ---");
         String recursoId = leerTexto("Ingrese ID del recurso a devolver");
 
-        Optional<RecursoDigital> recursoOpt = gestorRecursos.buscarRecursoPorId(recursoId);
+        try {
+            this.gestorPrestamos.registrarDevolucion(recursoId);
+            mostrarMensaje("Devolución registrada con éxito para el recurso ID: " + recursoId);
+            this.servicioNotificaciones.enviarNotificacion(
+                    "DEVOLUCION_EXITOSA",
+                    "N/A",
+                    "Devolución registrada para recurso ID: " + recursoId
+            );
 
-        if (recursoOpt.isEmpty()) { /* ... manejo de recurso no encontrado ... */ return; }
-
-        RecursoDigital recurso = recursoOpt.get();
-
-        if (recurso instanceof Prestable prestableRecurso) {
-            try {
-                Optional<Usuario> usuarioOptAnterior = prestableRecurso.getUsuarioPrestamo();
-                String idUsuarioAnterior = usuarioOptAnterior.map(Usuario::getId).orElse("DESCONOCIDO");
-
-                prestableRecurso.marcarComoDevuelto();
-
-                this.servicioNotificaciones.enviarNotificacion(
-                        "DEVOLUCION_EXITOSA",
-                        idUsuarioAnterior,
-                        "Devolución registrada: '" + recurso.getTitulo() + "'"
-                );
-                mostrarMensaje("Devolución realizada con éxito.");
-
-            } catch (OperacionNoPermitidaException e) {
-                mostrarMensaje("Error al devolver: " + e.getMessage());
-            } catch (Exception e) {
-                mostrarMensaje("Ocurrió un error inesperado durante la devolución: " + e.getMessage());
-            }
-        } else {
-            mostrarMensaje("Error: El recurso '" + recurso.getTitulo() + "' no es del tipo que se pueda prestar/devolver.");
+        } catch (OperacionNoPermitidaException e) {
+            mostrarMensaje("Error al devolver: " + e.getMessage());
+        } catch (NullPointerException e) {
+            mostrarMensaje("Error: El ID del recurso no puede ser nulo.");
+        } catch (Exception e) {
+            mostrarMensaje("Ocurrió un error inesperado durante la devolución: " + e.getMessage());
         }
     }
 
