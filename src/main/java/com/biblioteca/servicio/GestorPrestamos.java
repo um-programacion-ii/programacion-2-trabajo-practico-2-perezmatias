@@ -4,8 +4,9 @@ import com.biblioteca.modelo.prestamo.Prestamo;
 import com.biblioteca.modelo.recurso.RecursoDigital;
 import com.biblioteca.modelo.usuario.Usuario;
 import com.biblioteca.excepciones.OperacionNoPermitidaException;
-
+import com.biblioteca.modelo.recurso.Prestable;
 import java.time.LocalDate;
+import java.lang.IllegalArgumentException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -21,9 +22,35 @@ public class GestorPrestamos {
     }
 
     public Prestamo realizarPrestamo(Usuario usuario, RecursoDigital recurso, int diasPrestamo) {
-        System.out.println(">>> Lógica de realizarPrestamo PENDIENTE <<<");
+        Objects.requireNonNull(usuario, "El usuario no puede ser nulo para realizar un préstamo.");
+        Objects.requireNonNull(recurso, "El recurso no puede ser nulo para realizar un préstamo.");
+        if (diasPrestamo <= 0) {
+            throw new IllegalArgumentException("El número de días de préstamo debe ser positivo.");
+        }
 
-        throw new UnsupportedOperationException("realizarPrestamo no implementado todavía.");
+        if (prestamosActivosPorRecursoId.containsKey(recurso.getIdentificador())) {
+            throw new OperacionNoPermitidaException("Error interno: El recurso con ID " + recurso.getIdentificador() + " ya figura como prestado en el gestor.");
+        }
+
+        if (!(recurso instanceof Prestable prestable)) {
+            throw new OperacionNoPermitidaException("El recurso '" + recurso.getTitulo() + "' no es del tipo prestable.");
+        }
+
+        if (!prestable.estaDisponibleParaPrestamo()) {
+
+            throw new OperacionNoPermitidaException("El recurso '" + recurso.getTitulo() + "' no está disponible para préstamo en este momento (Estado: " + recurso.getEstado() + ").");
+        }
+
+        LocalDate fechaPrestamo = LocalDate.now();
+        LocalDate fechaDevolucion = fechaPrestamo.plusDays(diasPrestamo);
+        prestable.marcarComoPrestado(usuario, fechaDevolucion);
+
+        Prestamo nuevoPrestamo = new Prestamo(recurso, usuario, fechaPrestamo, fechaDevolucion);
+
+        prestamosActivosPorRecursoId.put(recurso.getIdentificador(), nuevoPrestamo);
+
+        System.out.println("Préstamo creado exitosamente: ID " + nuevoPrestamo.getIdPrestamo());
+        return nuevoPrestamo;
     }
 
     public void registrarDevolucion(String recursoId) {
